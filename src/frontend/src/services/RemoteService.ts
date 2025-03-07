@@ -38,6 +38,18 @@ export default class RemoteServices {
     appearance.loading = false
     throw deiErr
   }
+  
+  static async getPeopleByType(type: string): Promise<PersonDto[]> {
+    return httpClient.get(`/api/workflows/professors`)
+  }
+
+  static async submeterPropostaJuri(professorIds: number[]): Promise<void> {
+    const studentId = 1 // This should come from authentication context
+    return httpClient.post(`/api/workflows/proposta-juri`, {
+      studentId: studentId,
+      professorIds: professorIds
+    })
+  }
 }
 
 httpClient.interceptors.request.use((request) => request, RemoteServices.handleError)

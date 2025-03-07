@@ -23,6 +23,14 @@ public class PersonService {
 				.orElseThrow(() -> new DEIException(ErrorMessage.NO_SUCH_PERSON, Long.toString(id)));
 	}
 
+    @Transactional
+    public List<PersonDto> getPeopleByType(String type) {
+        return personRepository.findByType(Person.PersonType.valueOf(type.toUpperCase()))
+            .stream()
+            .map(PersonDto::new)
+            .toList();
+    }
+
 	@Transactional
 	public List<PersonDto> getPeople() {
 		return personRepository.findAll().stream()
