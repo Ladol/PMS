@@ -40,14 +40,22 @@
                 class="mr-2"
                 @click="visualizarDocumento(proposta)"
               >
-                <v-icon left>mdi-download</v-icon>
+                <v-icon left>mdi-eye</v-icon>
                 Visualizar
+              </v-btn>
+              <v-btn 
+                color="primary" 
+                size="small"
+                class="mr-2"
+                @click="downloadPdf(proposta)"
+              >
+                <v-icon left>mdi-download</v-icon>
+                Download
               </v-btn>
               <v-btn 
                 color="success" 
                 size="small"
-                @click="assinarDocumento(proposta.id)"
-                :loading="signing === proposta.id"
+                @click="openUploadDialog(proposta)"
               >
                 <v-icon left>mdi-upload</v-icon>
                 Assinar
@@ -64,9 +72,6 @@
         <v-card-title class="text-h5 bg-primary text-white">
           Documento da Proposta
           <v-spacer></v-spacer>
-          <v-btn icon @click="showPdfDialog = false">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
         </v-card-title>
         <v-card-text class="pa-6">
           <div class="pdf-container">
@@ -103,6 +108,45 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="primary" @click="showPdfDialog = false">Fechar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Upload Dialog -->
+    <v-dialog v-model="showUploadDialog" max-width="500px">
+      <v-card>
+        <v-card-title class="text-h5 bg-primary text-white">
+          Submeter Documento Assinado
+          <v-spacer></v-spacer>
+        </v-card-title>
+        <v-card-text class="pa-6">
+          <p class="mb-4">Por favor, faça upload do documento assinado:</p>
+          
+          <v-file-input
+            v-model="uploadedFile"
+            accept=".pdf"
+            label="Documento Assinado"
+            prepend-icon="mdi-file-pdf-box"
+            show-size
+            :rules="[v => !!v || 'É necessário fazer upload do documento assinado']"
+            counter
+          ></v-file-input>
+          
+          <v-alert v-if="uploadError" type="error" class="mt-4">
+            {{ uploadError }}
+          </v-alert>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="error" @click="showUploadDialog = false">Cancelar</v-btn>
+          <v-btn 
+            color="success" 
+            @click="assinarDocumento()"
+            :loading="signing !== null"
+            :disabled="!uploadedFile"
+          >
+            Submeter
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -156,7 +200,10 @@ const propostas = ref<ThesisProposal[]>([]);
 const loading = ref(true);
 const signing = ref<number | null>(null);
 const showPdfDialog = ref(false);
+const showUploadDialog = ref(false);
 const selectedProposal = ref<ThesisProposal | null>(null);
+const uploadedFile = ref<File | null>(null);
+const uploadError = ref<string | null>(null);
 
 onMounted(async () => {
   try {
@@ -181,29 +228,107 @@ const visualizarDocumento = (proposta: ThesisProposal) => {
   showPdfDialog.value = true;
 };
 
-const assinarDocumento = async (id: number) => {
-  try {
-    const currentCoordinatorId = roleStore.currentPerson?.id;
-    
-    if (!currentCoordinatorId) {
-      alert('Erro: Coordenador não identificado. Por favor, selecione um coordenador.');
-      return;
-    }
+const openUploadDialog = (proposta: ThesisProposal) => {
+  selectedProposal.value = proposta;
+  uploadedFile.value = null;
+  uploadError.value = null;
+  showUploadDialog.value = true;
+};
 
-    signing.value = id;
-    // Simulate document path - in a real app, this would be a path to the uploaded file
-    const documentPath = `signed_document_${id}_${Date.now()}.pdf`;
+const downloadPdf = (proposta: ThesisProposal) => {
+  // Create PDF content TODO: it doesn't work, i don't know why
+  const pdfContent = generatePdfContent(proposta);
+  
+  // Create a Blob with the PDF content
+  const blob = new Blob([pdfContent], { type: 'application/pdf' });
+  
+  // Create a URL for the Blob
+  const url = URL.createObjectURL(blob);
+  
+  // Create a link element
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `proposta_juri_${proposta.id}.pdf`;
+  
+  // Append the link to the body
+  document.body.appendChild(link);
+  
+  // Click the link to trigger the download
+  link.click();
+  
+  // Remove the link from the body
+  document.body.removeChild(link);
+  
+  // Release the URL object
+  URL.revokeObjectURL(url);
+};
+
+const generatePdfContent = (proposta: ThesisProposal): string => {
+  // In a real application, you would use a library like jsPDF to generate a real PDF
+  // For this project, we'll just return a string representation
+  return `
+    Instituto Superior Técnico
+    Departamento de Engenharia Informática
+    Proposta de Júri para Dissertação
     
-    await RemoteServices.signDocument(id, currentCoordinatorId, documentPath);
+    ID da Proposta: ${proposta.id}
+    Aluno: ${proposta.student.name}
+    IST ID: ${proposta.student.istId || 'N/A'}
+    Data de Submissão: ${formatDate(proposta.submissionDate)}
+    
+    Composição do Júri
+    Presidente: ${proposta.juryPresident?.name || 'N/A'}
+    
+    Membros:
+    ${proposta.juryMembers.map(membro => `- ${membro.name}`).join('\n')}
+    
+    Assinatura do Coordenador:
+    
+    Data: ${new Date().toLocaleDateString('pt-PT')}
+  `;
+};
+
+const assinarDocumento = async () => {
+  if (!selectedProposal.value) {
+    uploadError.value = 'Nenhuma proposta selecionada.';
+    return;
+  }
+  
+  if (!uploadedFile.value) {
+    uploadError.value = 'É necessário fazer upload do documento assinado.';
+    return;
+  }
+  
+  const currentCoordinatorId = roleStore.currentPerson?.id;
+  
+  if (!currentCoordinatorId) {
+    uploadError.value = 'Coordenador não identificado. Por favor, selecione um coordenador.';
+    return;
+  }
+
+  try {
+    signing.value = selectedProposal.value.id;
+    
+    // Get the file name
+    const fileName = uploadedFile.value.name;
+    
+    // In a real application, you would upload the file to a server
+    // For this simulation, we'll just use the file name as the document path
+    const documentPath = `signed_documents/${fileName}`;
+    
+    await RemoteServices.signDocument(selectedProposal.value.id, currentCoordinatorId, documentPath);
     
     // Remove the signed proposal from the list
-    propostas.value = propostas.value.filter(p => p.id !== id);
+    propostas.value = propostas.value.filter(p => p.id !== selectedProposal.value?.id);
+    
+    // Close the upload dialog
+    showUploadDialog.value = false;
     
     // Show success message
     alert('Documento assinado com sucesso!');
   } catch (error) {
     console.error('Erro ao assinar documento:', error);
-    alert('Erro ao assinar documento');
+    uploadError.value = 'Erro ao assinar documento. Por favor, tente novamente.';
   } finally {
     signing.value = null;
   }
