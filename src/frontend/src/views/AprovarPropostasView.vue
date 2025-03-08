@@ -53,6 +53,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import RemoteServices from '@/services/RemoteService'
+import { useUserStore } from '@/stores/user'
+import { useRoleStore } from '@/stores/role'
 
 interface JuryMember {
   id: number;
@@ -69,9 +71,28 @@ interface ThesisProposal {
   student: Student;
   juryMembers: JuryMember[];
   submissionDate: string;
-  state: string;
+  thesisState: string;
+  defenseState: string | null;
+  scApprover: { id: number; name: string } | null;
+  scApprovalDate: string | null;
+  juryPresident: { id: number; name: string } | null;
+  coordinatorAssigner: { id: number; name: string } | null;
+  presidentAssignmentDate: string | null;
+  documentSigner: { id: number; name: string } | null;
+  documentSignDate: string | null;
+  signedDocumentPath: string | null;
+  fenixSubmitter: { id: number; name: string } | null;
+  fenixSubmissionDate: string | null;
+  defenseScheduler: { id: number; name: string } | null;
+  defenseScheduleDate: string | null;
+  plannedDefenseDate: string | null;
+  grader: { id: number; name: string } | null;
+  gradingDate: string | null;
+  grade: number | null;
 }
 
+const userStore = useUserStore();
+const roleStore = useRoleStore();
 const propostas = ref<ThesisProposal[]>([]);
 const loading = ref(true);
 const approving = ref<number | null>(null);
@@ -79,9 +100,8 @@ const approving = ref<number | null>(null);
 onMounted(async () => {
   try {
     const response = await RemoteServices.getPendingProposals();
-    // Check if we need to access response.data
     propostas.value = Array.isArray(response) ? response : response.data;
-    console.log('Loaded proposals:', propostas.value); // Add logging for debugging
+    console.log('Loaded proposals:', propostas.value);
   } catch (error) {
     console.error('Erro ao carregar propostas:', error);
   } finally {
@@ -90,14 +110,24 @@ onMounted(async () => {
 });
 
 const formatDate = (dateString: string) => {
+  if (!dateString) return '';
   const date = new Date(dateString);
   return date.toLocaleString('pt-PT');
 };
 
 const aprovarProposta = async (id: number) => {
   try {
+    // Use user store ID if available, otherwise fall back to role store
+    const currentUserId = userStore.user.id || (roleStore.currentPerson?.id || 0);
+    
+    if (!currentUserId) {
+      alert('Erro: Usuário não identificado. Por favor, selecione um usuário SC.');
+      return;
+    }
+
     approving.value = id;
-    await RemoteServices.approveProposal(id);
+    // Pass the current SC user's ID to the backend
+    await RemoteServices.approveProposal(id, currentUserId);
     
     // Remove the approved proposal from the list
     propostas.value = propostas.value.filter(p => p.id !== id);

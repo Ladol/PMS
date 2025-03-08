@@ -38,6 +38,9 @@
       <v-chip v-else-if="item.type === 'TEACHER'" color="blue" text-color="white">
         Professor
       </v-chip>
+      <v-chip v-else-if="item.type === 'SC'" color="orange" text-color="white">
+        SC
+      </v-chip>
       <v-chip v-else color="green" text-color="white">
         Aluno
       </v-chip>
@@ -117,4 +120,30 @@ const fuzzySearch = (value: string, search: string) => {
   return searchRegex.test(value)
 }
 
+/*
+-- Insert 2 people of each type
+INSERT INTO public.people (id, ist_id, name, type) VALUES
+-- Students
+(1, 'ist123456', 'Alice Johnson', 'STUDENT'),
+(2, 'ist234567', 'Bob Smith', 'STUDENT'),
+
+-- Teachers
+(3, 'ist345678', 'Dr. Emily Davis', 'TEACHER'),
+(4, 'ist456789', 'Prof. Michael Brown', 'TEACHER'),
+
+-- Staff
+(5, 'ist567890', 'Sarah Wilson', 'STAFF'),
+(6, 'ist678901', 'David Martinez', 'STAFF'),
+
+-- SC (Student Committee)
+(7, 'ist789012', 'Laura Garcia', 'SC'),
+(8, 'ist890123', 'James Rodriguez', 'SC'),
+
+-- Coordinators
+(9, 'ist901234', 'Dr. Olivia Taylor', 'COORDINATOR'),
+(10, 'ist012345', 'Prof. William Anderson', 'COORDINATOR');
+
+-- Verify the inserted data
+SELECT * FROM public.people ORDER BY id ASC;
+*/
 </script>

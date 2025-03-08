@@ -58,11 +58,13 @@
 <script setup lang="ts">
 import DarkModeSwitch from './DarkModeSwitch.vue'
 import { useRoleStore } from '@/stores/role'
+import { useUserStore } from '@/stores/user'
 import { ref, watch } from 'vue'
 import RemoteServices from '@/services/RemoteService'
 import type PersonDto from '@/models/PersonDto'
 
 const roleStore = useRoleStore()
+const userStore = useUserStore()
 const currentRole = ref(roleStore.currentRole)
 const currentPerson = ref(roleStore.currentPerson)
 
@@ -113,6 +115,15 @@ const confirmSelection = () => {
   if (selectedPerson.value) {
     roleStore.setCurrentPerson(selectedPerson.value)
     roleStore.currentRole = selectedRole.value
+    
+    // Also set the user in the user store
+    userStore.setUser({
+      id: selectedPerson.value.id,
+      name: selectedPerson.value.name,
+      type: selectedPerson.value.type,
+      istId: selectedPerson.value.istId
+    })
+    
     showDialog.value = false
   }
 }
@@ -121,6 +132,14 @@ const confirmSelection = () => {
 const logout = () => {
   roleStore.setCurrentPerson(null)
   roleStore.currentRole = ''
+  
+  // Also clear the user store
+  userStore.setUser({
+    id: 0,
+    name: '',
+    type: '',
+    istId: ''
+  })
 }
 
 // Watch for role changes

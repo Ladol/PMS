@@ -62,8 +62,38 @@ export default class RemoteServices {
     return httpClient.get('/api/workflows/proposals/pending')
   }
 
-  static async approveProposal(id: number) {
-    return httpClient.post(`/api/workflows/proposals/${id}/approve`)
+  static async approveProposal(id: number, scId: number) {
+    return httpClient.post(`/api/workflows/proposals/${id}/approve`, scId)
+  }
+
+  static async assignJuryPresident(id: number, coordinatorId: number, presidentId: number) {
+    return httpClient.post(`/api/workflows/proposals/${id}/assign-president`, {
+      coordinatorId,
+      presidentId
+    })
+  }
+  static async signDocument(id: number, coordinatorId: number, documentPath: string) {
+    return httpClient.post(`/api/workflows/proposals/${id}/sign-document`, {
+      coordinatorId,
+      documentPath
+    })
+  }
+  static async submitToFenix(id: number, staffId: number) {
+    return httpClient.post(`/api/workflows/proposals/${id}/submit-fenix`, {
+      staffId
+    })
+  }
+  static async scheduleDefense(id: number, coordinatorId: number, defenseDate: string) {
+    return httpClient.post(`/api/workflows/proposals/${id}/schedule-defense`, {
+      coordinatorId,
+      defenseDate
+    })
+  }
+  static async gradeThesis(id: number, coordinatorId: number, grade: number) {
+    return httpClient.post(`/api/workflows/proposals/${id}/grade`, {
+      coordinatorId,
+      grade
+    })
   }
 }
 

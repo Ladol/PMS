@@ -41,19 +41,60 @@ public class ThesisProposal {
 
     private LocalDateTime submissionDate;
     @Enumerated(EnumType.STRING)
-    private ThesisState state = ThesisState.PROPOSTA_JURI_SUBMETIDA;
+    private ThesisState thesisState = ThesisState.PROPOSTA_JURI_SUBMETIDA;
+    @Enumerated(EnumType.STRING)
+    private DefenseState defenseState = null;
     
-    public ThesisState getState() {
-        return state;
-    }
+    @ManyToOne
+    @JoinColumn(name = "sc_approver_id")
+    private Person scApprover;
     
-    public void setState(ThesisState state) {
-        this.state = state;
-    }
+    private LocalDateTime scApprovalDate;
+
+    @ManyToOne
+    @JoinColumn(name = "jury_president_id")
+    private Person juryPresident;
     
+    @ManyToOne
+    @JoinColumn(name = "coordinator_id")
+    private Person coordinatorAssigner;
+    
+    private LocalDateTime presidentAssignmentDate;
+
+    @ManyToOne
+    @JoinColumn(name = "document_signer_id")
+    private Person documentSigner;
+    
+    private LocalDateTime documentSignDate;
+    
+    private String signedDocumentPath;
+
+    @ManyToOne
+    @JoinColumn(name = "fenix_submitter_id")
+    private Person fenixSubmitter;
+    
+    private LocalDateTime fenixSubmissionDate;
+
+    @ManyToOne
+    @JoinColumn(name = "defense_scheduler_id")
+    private Person defenseScheduler;
+    
+    private LocalDateTime defenseScheduleDate;
+    
+    private LocalDateTime plannedDefenseDate;
+
+    @ManyToOne
+    @JoinColumn(name = "grader_id")
+    private Person grader;
+    
+    private LocalDateTime gradingDate;
+    
+    private Integer grade;
+    // Default constructor
     protected ThesisProposal() {
     }
     
+    // Constructor with parameters
     public ThesisProposal(Person student, Set<Person> juryMembers) {
         this.student = student;
         this.juryMembers = juryMembers;

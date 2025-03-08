@@ -14,5 +14,5 @@ import pt.ulisboa.tecnico.rnl.dei.dms.workflow.domain.ThesisState;
 @Transactional
 public interface ThesisProposalRepository extends JpaRepository<ThesisProposal, Long> {
     Optional<ThesisProposal> findByStudentId(Long studentId);
-    List<ThesisProposal> findByState(ThesisState state);
+    List<ThesisProposal> findByThesisState(ThesisState thesisState);
 }
