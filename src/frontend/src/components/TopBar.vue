@@ -24,6 +24,9 @@ const navbarItems = computed(() => [
   ...(roleStore.isCoordinator ? [
     { name: 'Atribuir Presidente Júri', path: '/atribuir-presidente', icon: 'mdi-account-tie' },
     { name: 'Assinar Documento', path: '/assinar-documento', icon: 'mdi-file-sign' }
+  ] : []),
+  ...(roleStore.isStaff ? [
+    { name: 'Submeter ao Fenix', path: '/submeter-fenix', icon: 'mdi-send' }
   ] : [])
 ])
 </script>

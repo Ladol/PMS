@@ -73,7 +73,7 @@ public class WorkflowService {
             .map(ThesisProposalDto::new)
             .collect(Collectors.toList());
     }
-    
+
     @Transactional
     public List<ThesisProposalDto> getApprovedProposals() {
         List<ThesisProposal> proposals = proposalRepository.findByThesisState(ThesisState.APROVADO_PELO_SC);
@@ -167,6 +167,16 @@ public class WorkflowService {
         proposal.setSignedDocumentPath(documentPath);
         
         proposalRepository.save(proposal);
+    }
+
+    @Transactional
+    public List<ThesisProposalDto> getSignedProposals() {
+        List<ThesisProposal> proposals = proposalRepository.findByThesisState(ThesisState.DOCUMENTO_ASSINADO);
+        System.out.println("Found " + proposals.size() + " signed proposals");
+        
+        return proposals.stream()
+            .map(ThesisProposalDto::new)
+            .collect(Collectors.toList());
     }
     
     @Transactional

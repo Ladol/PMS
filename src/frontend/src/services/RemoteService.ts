@@ -78,6 +78,11 @@ export default class RemoteServices {
       documentPath
     })
   }
+
+  static async getSignedProposals() {
+    return httpClient.get('/api/workflows/proposals/signed')
+  }
+
   static async submitToFenix(id: number, staffId: number) {
     return httpClient.post(`/api/workflows/proposals/${id}/submit-fenix`, {
       staffId
