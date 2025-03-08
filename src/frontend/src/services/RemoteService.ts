@@ -57,15 +57,15 @@ export default class RemoteServices {
       professorIds: professorIds
     })
   }
-
   static async getPendingProposals() {
     return httpClient.get('/api/workflows/proposals/pending')
   }
-
+  static async getApprovedProposals() {
+    return httpClient.get('/api/workflows/proposals/approved')
+  }
   static async approveProposal(id: number, scId: number) {
     return httpClient.post(`/api/workflows/proposals/${id}/approve`, scId)
   }
-
   static async assignJuryPresident(id: number, coordinatorId: number, presidentId: number) {
     return httpClient.post(`/api/workflows/proposals/${id}/assign-president`, {
       coordinatorId,

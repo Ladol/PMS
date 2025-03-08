@@ -4,6 +4,7 @@ import PeopleView from '@/views/people/PeopleView.vue'
 import StatisticsView from '@/views/statistics/StatisticsView.vue'
 import ProporJuriView from '@/views/ProporJuriView.vue'
 import AprovarPropostasView from '@/views/AprovarPropostasView.vue'
+import AtribuirPresidenteJuriView from '@/views/AtribuirPresidenteJuriView.vue'
 import { useRoleStore } from '@/stores/role'
 
 const router = createRouter({
@@ -35,7 +36,12 @@ const router = createRouter({
       name: 'aprovar-propostas',
       component: AprovarPropostasView,
       meta: { requiresRole: 'sc' }
-    }
+    },
+    {
+      path: '/atribuir-presidente',
+      name: 'atribuir-presidente',
+      component: AtribuirPresidenteJuriView
+    },
   ]
 })
 

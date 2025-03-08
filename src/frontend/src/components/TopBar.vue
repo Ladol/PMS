@@ -20,6 +20,9 @@ const navbarItems = computed(() => [
   ] : []),
   ...(roleStore.isSC ? [
     { name: 'Aprovar Propostas', path: '/aprovar-propostas', icon: 'mdi-check-decagram' }
+  ] : []),
+  ...(roleStore.isCoordinator ? [
+    { name: 'Atribuir Presidente Júri', path: '/atribuir-presidente', icon: 'mdi-account-tie' }
   ] : [])
 ])
 </script>

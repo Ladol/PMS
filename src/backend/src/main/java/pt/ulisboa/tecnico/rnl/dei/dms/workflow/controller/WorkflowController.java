@@ -48,6 +48,11 @@ public class WorkflowController {
     public List<ThesisProposalDto> getPendingProposals() {
         return workflowService.getPendingProposals();
     }
+    
+    @GetMapping("/proposals/approved")
+    public List<ThesisProposalDto> getApprovedProposals() {
+        return workflowService.getApprovedProposals();
+    }
 
     @PostMapping("/proposals/{id}/approve")
     public ResponseEntity<Void> approveProposal(

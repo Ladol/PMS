@@ -65,6 +65,16 @@ public class WorkflowService {
     }
     
     @Transactional
+    public List<ThesisProposalDto> getApprovedProposals() {
+        List<ThesisProposal> proposals = proposalRepository.findByThesisState(ThesisState.APROVADO_PELO_SC);
+        System.out.println("Found " + proposals.size() + " approved proposals");
+        
+        return proposals.stream()
+            .map(ThesisProposalDto::new)
+            .collect(Collectors.toList());
+    }
+    
+    @Transactional
     public void approveProposal(Long id, Long scId) {
         ThesisProposal proposal = proposalRepository.findById(id)
             .orElseThrow(() -> new DEIException(ErrorMessage.NOT_FOUND, "Proposal with id " + id + " not found"));
