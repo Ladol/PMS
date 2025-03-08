@@ -22,7 +22,8 @@ const navbarItems = computed(() => [
     { name: 'Aprovar Propostas', path: '/aprovar-propostas', icon: 'mdi-check-decagram' }
   ] : []),
   ...(roleStore.isCoordinator ? [
-    { name: 'Atribuir Presidente Júri', path: '/atribuir-presidente', icon: 'mdi-account-tie' }
+    { name: 'Atribuir Presidente Júri', path: '/atribuir-presidente', icon: 'mdi-account-tie' },
+    { name: 'Assinar Documento', path: '/assinar-documento', icon: 'mdi-file-sign' }
   ] : [])
 ])
 </script>

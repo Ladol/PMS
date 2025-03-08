@@ -44,16 +44,19 @@ public class WorkflowController {
         return ResponseEntity.ok().build();
     }
     
+    @GetMapping("/proposals/with-president")
+    public List<ThesisProposalDto> getProposalsWithPresident() {
+        return workflowService.getProposalsWithPresident();
+    }
+    
     @GetMapping("/proposals/pending")
     public List<ThesisProposalDto> getPendingProposals() {
         return workflowService.getPendingProposals();
     }
-    
     @GetMapping("/proposals/approved")
     public List<ThesisProposalDto> getApprovedProposals() {
         return workflowService.getApprovedProposals();
     }
-
     @PostMapping("/proposals/{id}/approve")
     public ResponseEntity<Void> approveProposal(
             @PathVariable Long id,
@@ -61,7 +64,6 @@ public class WorkflowController {
         workflowService.approveProposal(id, scId);
         return ResponseEntity.ok().build();
     }
-    
     @PostMapping("/proposals/{id}/assign-president")
     public ResponseEntity<Void> assignJuryPresident(
             @PathVariable Long id,
@@ -69,7 +71,6 @@ public class WorkflowController {
         workflowService.assignJuryPresident(id, request.coordinatorId(), request.presidentId());
         return ResponseEntity.ok().build();
     }
-    
     @PostMapping("/proposals/{id}/sign-document")
     public ResponseEntity<Void> signDocument(
             @PathVariable Long id,
@@ -77,7 +78,6 @@ public class WorkflowController {
         workflowService.signDocument(id, request.coordinatorId(), request.documentPath());
         return ResponseEntity.ok().build();
     }
-    
     @PostMapping("/proposals/{id}/submit-fenix")
     public ResponseEntity<Void> submitToFenix(
             @PathVariable Long id,
@@ -85,7 +85,6 @@ public class WorkflowController {
         workflowService.submitToFenix(id, request.staffId());
         return ResponseEntity.ok().build();
     }
-    
     @PostMapping("/proposals/{id}/schedule-defense")
     public ResponseEntity<Void> scheduleDefense(
             @PathVariable Long id,
@@ -93,7 +92,6 @@ public class WorkflowController {
         workflowService.scheduleDefense(id, request.coordinatorId(), request.defenseDate());
         return ResponseEntity.ok().build();
     }
-    
     @PostMapping("/proposals/{id}/grade")
     public ResponseEntity<Void> gradeThesis(
             @PathVariable Long id,

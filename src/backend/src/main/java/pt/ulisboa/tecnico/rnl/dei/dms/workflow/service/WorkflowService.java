@@ -65,6 +65,16 @@ public class WorkflowService {
     }
     
     @Transactional
+    public List<ThesisProposalDto> getProposalsWithPresident() {
+        List<ThesisProposal> proposals = proposalRepository.findByThesisState(ThesisState.PRESIDENTE_JURI_ATRIBUIDO);
+        System.out.println("Found " + proposals.size() + " proposals with president assigned");
+            
+        return proposals.stream()
+            .map(ThesisProposalDto::new)
+            .collect(Collectors.toList());
+    }
+    
+    @Transactional
     public List<ThesisProposalDto> getApprovedProposals() {
         List<ThesisProposal> proposals = proposalRepository.findByThesisState(ThesisState.APROVADO_PELO_SC);
         System.out.println("Found " + proposals.size() + " approved proposals");

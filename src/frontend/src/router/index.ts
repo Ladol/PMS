@@ -5,6 +5,7 @@ import StatisticsView from '@/views/statistics/StatisticsView.vue'
 import ProporJuriView from '@/views/ProporJuriView.vue'
 import AprovarPropostasView from '@/views/AprovarPropostasView.vue'
 import AtribuirPresidenteJuriView from '@/views/AtribuirPresidenteJuriView.vue'
+import AssinarDocumentoView from '@/views/AssinarDocumentoView.vue'
 import { useRoleStore } from '@/stores/role'
 
 const router = createRouter({
@@ -42,6 +43,11 @@ const router = createRouter({
       name: 'atribuir-presidente',
       component: AtribuirPresidenteJuriView
     },
+    {
+      path:'/assinar-documento',
+      name:'assinar-documento',
+      component: AssinarDocumentoView
+    }
   ]
 })
 

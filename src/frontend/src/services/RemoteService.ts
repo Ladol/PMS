@@ -95,6 +95,10 @@ export default class RemoteServices {
       grade
     })
   }
+  
+  static async getProposalsWithPresident() {
+    return httpClient.get('/api/workflows/proposals/with-president')
+  }
 }
 
 httpClient.interceptors.request.use((request) => request, RemoteServices.handleError)
