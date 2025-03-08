@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import pt.ulisboa.tecnico.rnl.dei.dms.person.dto.PersonDto;
 import pt.ulisboa.tecnico.rnl.dei.dms.person.service.PersonService;
 import pt.ulisboa.tecnico.rnl.dei.dms.workflow.dto.JuryProposalRequest;
+import pt.ulisboa.tecnico.rnl.dei.dms.workflow.dto.ThesisProposalDto;
 import pt.ulisboa.tecnico.rnl.dei.dms.workflow.service.WorkflowService;
 
 @RestController
@@ -34,6 +36,17 @@ public class WorkflowController {
     public ResponseEntity<Void> submitJuryProposal(
             @RequestBody JuryProposalRequest request) {
         workflowService.submitJuryProposal(request.studentId(), request.professorIds());
+        return ResponseEntity.ok().build();
+    }
+    
+    @GetMapping("/proposals/pending")
+    public List<ThesisProposalDto> getPendingProposals() {
+        return workflowService.getPendingProposals();
+    }
+
+    @PostMapping("/proposals/{id}/approve")
+    public ResponseEntity<Void> approveProposal(@PathVariable Long id) {
+        workflowService.approveProposal(id);
         return ResponseEntity.ok().build();
     }
 }

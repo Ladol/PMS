@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -38,12 +40,20 @@ public class ThesisProposal {
     private Set<Person> juryMembers = new HashSet<>();
 
     private LocalDateTime submissionDate;
+    @Enumerated(EnumType.STRING)
+    private ThesisState state = ThesisState.PROPOSTA_JURI_SUBMETIDA;
     
-    // Default constructor
+    public ThesisState getState() {
+        return state;
+    }
+    
+    public void setState(ThesisState state) {
+        this.state = state;
+    }
+    
     protected ThesisProposal() {
     }
     
-    // Constructor with parameters
     public ThesisProposal(Person student, Set<Person> juryMembers) {
         this.student = student;
         this.juryMembers = juryMembers;

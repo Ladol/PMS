@@ -17,6 +17,9 @@ const navbarItems = computed(() => [
   { name: 'Estatísticas', path: '/statistics', icon: 'mdi-chart-bar' },
   ...(roleStore.isStudent ? [
     { name: 'Propor Júri', path: '/propor-juri', icon: 'mdi-account-multiple-plus' }
+  ] : []),
+  ...(roleStore.isSC ? [
+    { name: 'Aprovar Propostas', path: '/aprovar-propostas', icon: 'mdi-check-decagram' }
   ] : [])
 ])
 </script>

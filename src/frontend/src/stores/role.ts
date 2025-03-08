@@ -16,8 +16,8 @@ export const useRoleStore = defineStore('role', {
     isStaff(): boolean {
       return this.currentRole === 'staff'
     },
-    isAdmin(): boolean {
-      return this.currentRole === 'admin'
+    isSC(): boolean {
+      return this.currentRole === 'sc'
     },
     isTeacher(): boolean {
       return this.currentRole === 'teacher'

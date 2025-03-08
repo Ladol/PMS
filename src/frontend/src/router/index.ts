@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import PeopleView from '@/views/people/PeopleView.vue'
 import StatisticsView from '@/views/statistics/StatisticsView.vue'
 import ProporJuriView from '@/views/ProporJuriView.vue'
+import AprovarPropostasView from '@/views/AprovarPropostasView.vue'
 import { useRoleStore } from '@/stores/role'
 
 const router = createRouter({
@@ -28,6 +29,12 @@ const router = createRouter({
       name: 'propor-juri',
       component: ProporJuriView,
       meta: { requiresRole: 'student' }
+    },
+    {
+      path: '/aprovar-propostas',
+      name: 'aprovar-propostas',
+      component: AprovarPropostasView,
+      meta: { requiresRole: 'sc' }
     }
   ]
 })
@@ -37,6 +44,9 @@ router.beforeEach((to, from) => {
   if (to.meta.requiresRole) {
     const roleStore = useRoleStore()
     if (to.meta.requiresRole === 'student' && !roleStore.isStudent) {
+      return '/'
+    }
+    if (to.meta.requiresRole === 'sc' && !roleStore.isSC) {
       return '/'
     }
   }

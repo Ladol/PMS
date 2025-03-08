@@ -57,6 +57,14 @@ export default class RemoteServices {
       professorIds: professorIds
     })
   }
+
+  static async getPendingProposals() {
+    return httpClient.get('/api/workflows/proposals/pending')
+  }
+
+  static async approveProposal(id: number) {
+    return httpClient.post(`/api/workflows/proposals/${id}/approve`)
+  }
 }
 
 httpClient.interceptors.request.use((request) => request, RemoteServices.handleError)

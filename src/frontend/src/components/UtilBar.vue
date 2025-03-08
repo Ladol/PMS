@@ -21,7 +21,7 @@
       <v-btn size="small" @click="openRoleDialog('student')">Aluno</v-btn>
       <v-btn size="small" @click="openRoleDialog('coordinator')">Coordenador</v-btn>
       <v-btn size="small" @click="openRoleDialog('staff')">Staff</v-btn>
-      <v-btn size="small" @click="openRoleDialog('admin')">SC</v-btn>
+      <v-btn size="small" @click="openRoleDialog('sc')">SC</v-btn>
       <v-btn size="small" @click="openRoleDialog('teacher')">Professor</v-btn>
     </v-toolbar-items>
     <v-toolbar-items class="ms-2">
@@ -84,7 +84,7 @@ const getRoleDisplayName = (role: string) => {
     case 'student': return 'Aluno'
     case 'coordinator': return 'Coordenador'
     case 'staff': return 'Staff'
-    case 'admin': return 'SC'
+    case 'sc': return 'SC'
     case 'teacher': return 'Professor'
     default: return role
   }
