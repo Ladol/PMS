@@ -3,6 +3,7 @@ import type { AxiosResponse } from 'axios'
 import { useAppearanceStore } from '@/stores/appearance'
 import DeiError from '@/models/DeiError'
 import type PersonDto from '@/models/PersonDto'
+import { useRoleStore } from '@/stores/role'
 
 const httpClient = axios.create()
 httpClient.defaults.timeout = 50000
@@ -44,7 +45,13 @@ export default class RemoteServices {
   }
 
   static async submeterPropostaJuri(professorIds: number[]): Promise<void> {
-    const studentId = 1 // This should come from authentication context
+    const roleStore = useRoleStore()
+    const studentId = roleStore.getCurrentPersonId
+    
+    if (!studentId) {
+      throw new Error('Nenhum estudante selecionado')
+    }
+    
     return httpClient.post(`/api/workflows/proposta-juri`, {
       studentId: studentId,
       professorIds: professorIds

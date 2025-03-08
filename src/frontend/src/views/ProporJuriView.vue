@@ -2,7 +2,11 @@
   <v-container>
     <h1 class="text-h4 mb-6">Proposta de Júri de Tese</h1>
     
-    <v-card class="pa-6">
+    <v-alert v-if="!currentStudent" type="warning" class="mb-4">
+      Por favor, selecione um estudante primeiro.
+    </v-alert>
+    
+    <v-card v-else class="pa-6">
       <v-alert type="info" class="mb-4">
         Selecione entre 1 a 5 professores para compor o júri da sua tese
       </v-alert>
@@ -34,6 +38,10 @@
 import { ref, computed } from 'vue'
 import RemoteServices from '@/services/RemoteService'
 import type PersonDto from '@/models/PersonDto'
+import { useRoleStore } from '@/stores/role'
+
+const roleStore = useRoleStore()
+const currentStudent = computed(() => roleStore.currentPerson)
 
 const professores = ref<PersonDto[]>([])
 const selectedProfessores = ref<PersonDto[]>([])
@@ -50,6 +58,11 @@ const isValid = computed(() => {
 
 const submeterProposta = async () => {
   try {
+    if (!currentStudent.value) {
+      alert('Por favor, selecione um estudante primeiro')
+      return
+    }
+    
     const professorIds = selectedProfessores.value
       .map(p => p.id)
       .filter((id): id is number => id !== undefined)
