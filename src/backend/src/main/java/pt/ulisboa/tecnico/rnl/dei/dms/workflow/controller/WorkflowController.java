@@ -86,6 +86,11 @@ public class WorkflowController {
         return workflowService.getSignedProposals();
     }
 
+    @GetMapping("/proposals/submitted")
+    public List<ThesisProposalDto> getSubmittedProposals() {
+        return workflowService.getSubmittedProposals();
+    }
+
     @PostMapping("/proposals/{id}/submit-fenix")
     public ResponseEntity<Void> submitToFenix(
             @PathVariable Long id,
@@ -108,5 +113,14 @@ public class WorkflowController {
             @RequestBody GradeThesisRequest request) {
         workflowService.gradeThesis(id, request.coordinatorId(), request.grade());
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/proposals/for-defense-scheduling")
+    public List<ThesisProposalDto> getProposalsForDefenseScheduling() {
+        return thesisProposalService.findByThesisStateAndDefenseState(
+            ThesisState.SUBMETIDO_AO_FENIX, null)
+            .stream()
+            .map(ThesisProposalDto::fromEntity)
+            .collect(Collectors.toList());
     }
 }

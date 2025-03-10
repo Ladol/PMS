@@ -7,6 +7,7 @@ import AprovarPropostasView from '@/views/AprovarPropostasView.vue'
 import AtribuirPresidenteJuriView from '@/views/AtribuirPresidenteJuriView.vue'
 import AssinarDocumentoView from '@/views/AssinarDocumentoView.vue'
 import SubmeterFenixTeseView from '@/views/SubmeterFenixTeseView.vue'
+import AgendarDefesaView from '@/views/AgendarDefesaView.vue'
 import { useRoleStore } from '@/stores/role'
 
 const router = createRouter({
@@ -53,6 +54,11 @@ const router = createRouter({
       path: '/submeter-fenix',
       name: 'submeter-fenix',
       component: SubmeterFenixTeseView
+    },
+    {
+      path: '/agendar-defesa',
+      name: '/agendar-defesa',
+      component: AgendarDefesaView
     }
   ]
 })

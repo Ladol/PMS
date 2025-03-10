@@ -256,4 +256,14 @@ public class WorkflowService {
         
         proposalRepository.save(proposal);
     }
+    
+    @Transactional
+    public List<ThesisProposalDto> getSubmittedProposals() {
+        List<ThesisProposal> proposals = proposalRepository.findByThesisState(ThesisState.SUBMETIDO_AO_FENIX);
+        System.out.println("Found " + proposals.size() + " submitted proposals");
+        
+        return proposals.stream()
+            .map(ThesisProposalDto::new)
+            .collect(Collectors.toList());
+    }
 }
