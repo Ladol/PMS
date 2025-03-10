@@ -19,4 +19,5 @@ public interface ThesisProposalRepository extends JpaRepository<ThesisProposal, 
 
     List<ThesisProposal> findByThesisStateAndDefenseState(ThesisState thesisState, DefenseState defenseState);
     List<ThesisProposal> findByThesisStateAndDefenseStateIsNull(ThesisState thesisState);
+    List<ThesisProposal> findByDefenseState(DefenseState defenseState);
 }

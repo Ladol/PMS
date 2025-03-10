@@ -229,6 +229,38 @@ public class WorkflowService {
     }
     
     @Transactional
+    public List<ThesisProposalDto> getSubmittedProposals() {
+        List<ThesisProposal> proposals = proposalRepository.findByThesisState(ThesisState.SUBMETIDO_AO_FENIX);
+        System.out.println("Found " + proposals.size() + " submitted proposals");
+        
+        return proposals.stream()
+            .map(ThesisProposalDto::new)
+            .collect(Collectors.toList());
+    }
+    
+    @Transactional
+    public List<ThesisProposalDto> getScheduledDefenses() {
+        List<ThesisProposal> proposals = proposalRepository.findByDefenseState(DefenseState.DEFESA_AGENDADA);
+        proposals.addAll(proposalRepository.findByDefenseState(DefenseState.EM_REVISAO));
+        
+        System.out.println("Found " + proposals.size() + " scheduled defenses");
+        
+        return proposals.stream()
+            .map(ThesisProposalDto::new)
+            .collect(Collectors.toList());
+    }
+    
+    @Transactional
+    public void updateDefenseState(Long id, DefenseState defenseState) {
+        ThesisProposal proposal = proposalRepository.findById(id)
+            .orElseThrow(() -> new DEIException(ErrorMessage.NOT_FOUND, "Proposal with id " + id + " not found"));
+        
+        proposal.setDefenseState(defenseState);
+        
+        proposalRepository.save(proposal);
+    }
+
+    @Transactional
     public void gradeThesis(Long id, Long coordinatorId, Integer grade) {
         ThesisProposal proposal = proposalRepository.findById(id)
             .orElseThrow(() -> new DEIException(ErrorMessage.NOT_FOUND, "Proposal with id " + id + " not found"));
@@ -240,30 +272,20 @@ public class WorkflowService {
             throw new DEIException(ErrorMessage.INVALID_USER_TYPE, "Only coordinators can grade theses");
         }
         
-        if (proposal.getDefenseState() != DefenseState.DEFESA_AGENDADA) {
+        if (proposal.getDefenseState() != DefenseState.EM_REVISAO) {
             throw new DEIException(ErrorMessage.INVALID_STATE_TRANSITION, 
-                "Defense must be in DEFESA_AGENDADA state to grade thesis");
+                "Defense must be in EM_REVISAO state to grade thesis");
         }
         
         if (grade < 0 || grade > 20) {
             throw new DEIException(ErrorMessage.INVALID_OPERATION, "Grade must be between 0 and 20");
         }
         
-        proposal.setDefenseState(DefenseState.EM_REVISAO);
+        proposal.setDefenseState(DefenseState.SUBMETIDO_AO_FENIX);
         proposal.setGrader(coordinator);
         proposal.setGradingDate(LocalDateTime.now());
         proposal.setGrade(grade);
         
         proposalRepository.save(proposal);
-    }
-    
-    @Transactional
-    public List<ThesisProposalDto> getSubmittedProposals() {
-        List<ThesisProposal> proposals = proposalRepository.findByThesisState(ThesisState.SUBMETIDO_AO_FENIX);
-        System.out.println("Found " + proposals.size() + " submitted proposals");
-        
-        return proposals.stream()
-            .map(ThesisProposalDto::new)
-            .collect(Collectors.toList());
     }
 }

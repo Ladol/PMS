@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.rnl.dei.dms.workflow.controller;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,10 @@ import pt.ulisboa.tecnico.rnl.dei.dms.workflow.dto.SubmitFenixRequest;
 import pt.ulisboa.tecnico.rnl.dei.dms.workflow.dto.ThesisProposalDto;
 import pt.ulisboa.tecnico.rnl.dei.dms.workflow.dto.AssignPresidentRequest;
 import pt.ulisboa.tecnico.rnl.dei.dms.workflow.dto.GradeThesisRequest;
+import pt.ulisboa.tecnico.rnl.dei.dms.workflow.dto.UpdateDefenseStateRequest;
+import pt.ulisboa.tecnico.rnl.dei.dms.workflow.domain.ThesisState;
 import pt.ulisboa.tecnico.rnl.dei.dms.workflow.service.WorkflowService;
+import pt.ulisboa.tecnico.rnl.dei.dms.workflow.service.ThesisProposalService;
 
 @RestController
 @RequestMapping("/api/workflows")
@@ -31,6 +35,9 @@ public class WorkflowController {
     
     @Autowired
     private PersonService personService;
+    
+    @Autowired
+    private ThesisProposalService thesisProposalService;
 
     @GetMapping("/professors")
     public List<PersonDto> getProfessors() {
@@ -120,7 +127,20 @@ public class WorkflowController {
         return thesisProposalService.findByThesisStateAndDefenseState(
             ThesisState.SUBMETIDO_AO_FENIX, null)
             .stream()
-            .map(ThesisProposalDto::fromEntity)
+            .map(proposal -> new ThesisProposalDto(proposal))
             .collect(Collectors.toList());
+    }
+
+    @GetMapping("/proposals/scheduled-defenses")
+    public List<ThesisProposalDto> getScheduledDefenses() {
+        return workflowService.getScheduledDefenses();
+    }
+
+    @PostMapping("/proposals/{id}/update-defense-state")
+    public ResponseEntity<Void> updateDefenseState(
+            @PathVariable Long id,
+            @RequestBody UpdateDefenseStateRequest request) {
+        workflowService.updateDefenseState(id, request.defenseState());
+        return ResponseEntity.ok().build();
     }
 }

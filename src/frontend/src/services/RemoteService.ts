@@ -102,6 +102,17 @@ export default class RemoteServices {
       defenseDate
     })
   }
+  
+  static async getScheduledDefenses() {
+    return httpClient.get('/api/workflows/proposals/scheduled-defenses')
+  }
+  
+  static async updateDefenseState(id: number, defenseState: string) {
+    return httpClient.post(`/api/workflows/proposals/${id}/update-defense-state`, {
+      defenseState
+    })
+  }
+  
   static async gradeThesis(id: number, coordinatorId: number, grade: number) {
     return httpClient.post(`/api/workflows/proposals/${id}/grade`, {
       coordinatorId,
