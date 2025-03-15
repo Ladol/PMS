@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.rnl.dei.dms.exceptions;
 
 public enum ErrorMessage {
+	INVALID_PERSON_DATA("Invalid person data: %s", 995),
     NOT_FOUND("Recurso não encontrado", 996),
 	NO_SUCH_PROPOSAL("Não existe nenhuma proposta com o ID %s", 996),
     INVALID_OPERATION("Operação inválida", 997),

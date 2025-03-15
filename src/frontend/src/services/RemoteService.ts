@@ -18,6 +18,10 @@ export default class RemoteServices {
   static async createPerson(person: PersonDto): Promise<PersonDto> {
     return httpClient.post('/people', person)
   }
+  
+  static async deletePerson(id: number): Promise<void> {
+    return httpClient.delete(`/people/${id}`)
+  }
 
   static async errorMessage(error: any): Promise<string> {
     if (error.message === 'Network Error') {
@@ -122,6 +126,10 @@ export default class RemoteServices {
   
   static async getProposalsWithPresident() {
     return httpClient.get('/api/workflows/proposals/with-president')
+  }
+  
+  static async updatePerson(person: PersonDto): Promise<PersonDto> {
+    return httpClient.put(`/people/${person.id}`, person)
   }
 }
 

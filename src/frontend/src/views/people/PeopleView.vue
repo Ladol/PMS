@@ -56,11 +56,39 @@
     </template>
     <template v-slot:[`item.actions`]="{ item }">
       <v-icon @click="editPerson(item)" class="mr-2">mdi-pencil</v-icon>
-      <v-icon @click="deletePerson(item)">mdi-delete</v-icon>
+      <v-icon @click="deletePerson(item)" color="error">mdi-delete</v-icon>
     </template>
-
   </v-data-table>
 
+  <!-- Add confirmation dialog -->
+  <v-dialog v-model="deleteDialog" max-width="400">
+    <v-card>
+      <v-card-title class="text-h5">Confirmar</v-card-title>
+      <v-card-text>
+        Tem certeza que deseja apagar <strong>{{ personToDelete?.name }}</strong>?
+        <div class="text-caption mt-2">Esta ação não pode ser desfeita.</div>
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn color="grey-darken-1" variant="text" @click="deleteDialog = false">Cancelar</v-btn>
+        <v-btn 
+          color="error" 
+          variant="tonal" 
+          @click="confirmDelete"
+          :loading="deleting"
+        >
+          Apagar
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
+  <!-- Add edit dialog -->
+  <CreatePersonDialog 
+    ref="editDialog" 
+    :personToEdit="personToEdit" 
+    @person-updated="getPeople" 
+  />
 </template>
 
 <script setup lang="ts">
@@ -72,6 +100,11 @@ import { reactive, ref } from 'vue'
 let search = ref('')
 let loading = ref(true)
 let creatingPeople = ref(false)
+let deleteDialog = ref(false)
+let deleting = ref(false)
+let personToDelete = ref<PeopleDto | null>(null)
+let personToEdit = ref<PeopleDto | null>(null)
+const editDialog = ref<InstanceType<typeof CreatePersonDialog> | null>(null)
 
 const headers = [
   { title: 'ID', key: 'id', value: 'id', sortable: true, filterable: false },
@@ -124,13 +157,36 @@ async function getPeople() {
 }
 
 const editPerson = (person: PeopleDto) => {
-  console.log('Editing person:', person)
+  personToEdit.value = { ...person }
 }
 
 const deletePerson = (person: PeopleDto) => {
-  console.log('Deleting person:', person)
+  personToDelete.value = person
+  deleteDialog.value = true
 }
 
+const confirmDelete = async () => {
+  if (!personToDelete.value || !personToDelete.value.id) return
+  
+  deleting.value = true
+  try {
+    await RemoteService.deletePerson(personToDelete.value.id)
+    // Remove the person from the local array
+    const index = people.findIndex(p => p.id === personToDelete.value?.id)
+    if (index !== -1) {
+      people.splice(index, 1)
+    }
+    // Show success notification (you might want to add a notification system)
+    console.log(`Person ${personToDelete.value.name} deleted successfully`)
+  } catch (error) {
+    console.error(`Failed to delete person:`, error)
+    // Show error notification
+  } finally {
+    deleting.value = false
+    deleteDialog.value = false
+    personToDelete.value = null
+  }
+}
 
 const fuzzySearch = (value: string, search: string) => {
   // Regex to match any character in between the search characters

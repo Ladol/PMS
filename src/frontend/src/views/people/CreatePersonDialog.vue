@@ -1,7 +1,7 @@
 <template>
   <div class="pa-4 text-center">
     <v-dialog v-model="dialog" max-width="400">
-      <template v-slot:activator="{ props: activatorProps }">
+      <template v-slot:activator="{ props: activatorProps }" v-if="!editMode">
         <v-btn
           class="text-none font-weight-regular"
           prepend-icon="mdi-plus"
@@ -11,7 +11,7 @@
         ></v-btn>
       </template>
 
-      <v-card prepend-icon="mdi-account" title="Nova">
+      <v-card prepend-icon="mdi-account" :title="editMode ? 'Editar Pessoa' : 'Nova Pessoa'">
         <v-card-text>
           <v-text-field label="Nome*" required v-model="newPerson.name"></v-text-field>
           <v-text-field label="IST ID*" required v-model="newPerson.istId"></v-text-field>
@@ -37,7 +37,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
 
-          <v-btn text="Close" variant="plain" @click="dialog = false"></v-btn>
+          <v-btn text="Close" variant="plain" @click="closeDialog">Cancelar</v-btn>
 
           <v-btn
             color="primary"
@@ -45,7 +45,9 @@
             variant="tonal"
             @click="savePerson"
             :disabled="!isValidForm"
-          ></v-btn>
+          >
+            {{ editMode ? 'Atualizar' : 'Salvar' }}
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -53,13 +55,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import type PersonDto from '@/models/people/PersonDto'
 import RemoteService from '@/services/RemoteService'
 
-const dialog = ref(false)
+const props = defineProps({
+  personToEdit: {
+    type: Object as () => PersonDto | null,
+    default: null
+  }
+})
 
-const emit = defineEmits(['person-created'])
+const dialog = ref(false)
+const editMode = computed(() => !!props.personToEdit)
+
+const emit = defineEmits(['person-created', 'person-updated'])
 
 const typeMappings = {
   Coordenador: 'COORDINATOR',
@@ -69,11 +79,32 @@ const typeMappings = {
   SC: 'SC'
 }
 
+const reverseTypeMappings = {
+  COORDINATOR: 'Coordenador',
+  STAFF: 'Staff',
+  STUDENT: 'Aluno',
+  TEACHER: 'Professor',
+  SC: 'SC'
+}
+
 const newPerson = ref<PersonDto>({
   name: '',
   type: '',
   email: ''
 })
+
+// Watch for changes in personToEdit and update the form
+watch(() => props.personToEdit, (person) => {
+  if (person) {
+    dialog.value = true
+    newPerson.value = { ...person }
+    
+    // Convert the type to display format
+    if (newPerson.value.type) {
+      newPerson.value.type = reverseTypeMappings[newPerson.value.type as keyof typeof reverseTypeMappings] || newPerson.value.type
+    }
+  }
+}, { immediate: true })
 
 const emailRules = (value: string) => {
   const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -90,17 +121,55 @@ const isValidForm = computed(() => {
   )
 })
 
-const savePerson = async () => {
-  if (!isValidForm.value) return
+const closeDialog = () => {
+  dialog.value = false
+  if (!editMode.value) {
+    resetForm()
+  }
+}
 
-  newPerson.value.type = typeMappings[newPerson.value.type as keyof typeof typeMappings]
-  await RemoteService.createPerson(newPerson.value)
+const resetForm = () => {
   newPerson.value = {
     name: '',
     type: '',
     email: ''
   }
-  dialog.value = false
-  emit('person-created')
 }
+
+const savePerson = async () => {
+  if (!isValidForm.value) return
+
+  // Convert display type to backend type
+  const personToSave = { ...newPerson.value }
+  personToSave.type = typeMappings[personToSave.type as keyof typeof typeMappings] || personToSave.type
+
+  try {
+    if (editMode.value && personToSave.id) {
+      // Update existing person
+      await RemoteService.updatePerson(personToSave)
+      emit('person-updated')
+    } else {
+      // Create new person
+      await RemoteService.createPerson(personToSave)
+      emit('person-created')
+    }
+    
+    dialog.value = false
+    if (!editMode.value) {
+      resetForm()
+    }
+  } catch (error) {
+    console.error('Error saving person:', error)
+  }
+}
+
+// Method to open the dialog from outside
+const openDialog = () => {
+  dialog.value = true
+}
+
+// Expose methods to parent component
+defineExpose({
+  openDialog
+})
 </script>
