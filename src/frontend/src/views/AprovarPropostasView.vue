@@ -17,8 +17,8 @@
             <th class="text-left" width="5%">ID</th>
             <th class="text-left" width="20%">Aluno</th>
             <th class="text-left" width="20%">Data de Submissão</th>
-            <th class="text-left" width="40%">Membros do Júri</th>
-            <th class="text-center" width="15%">Ações</th>
+            <th class="text-left" width="35%">Membros do Júri</th>
+            <th class="text-center" width="20%">Ações</th>
           </tr>
         </thead>
         <tbody>
@@ -34,19 +34,66 @@
               </v-chip-group>
             </td>
             <td class="text-center">
-              <v-btn 
-                color="success" 
-                size="small"
-                @click="aprovarProposta(proposta.id)"
-                :loading="approving === proposta.id"
-              >
-                Aprovar
-              </v-btn>
+              <div class="d-flex justify-center">
+                <v-btn 
+                  color="success" 
+                  size="small"
+                  @click="aprovarProposta(proposta.id)"
+                  :loading="approving === proposta.id"
+                  class="mr-2"
+                >
+                  Aprovar
+                </v-btn>
+                <v-btn 
+                  color="error" 
+                  size="small"
+                  @click="rejeitarProposta(proposta.id)"
+                  :loading="rejecting === proposta.id"
+                >
+                  Rejeitar
+                </v-btn>
+              </div>
             </td>
           </tr>
         </tbody>
       </v-table>
     </v-card>
+    
+    <!-- Success Dialog -->
+    <v-dialog v-model="successDialog" max-width="400">
+      <v-card>
+        <v-card-title class="text-h5 bg-success text-white">
+          Sucesso
+        </v-card-title>
+        <v-card-text class="pt-4">
+          {{ successMessage }}
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" variant="text" @click="successDialog = false">
+            Fechar
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    
+    <!-- Error Dialog -->
+    <v-dialog v-model="errorDialog" max-width="400">
+      <v-card>
+        <v-card-title class="text-h5 bg-error text-white">
+          Erro
+        </v-card-title>
+        <v-card-text class="pt-4">
+          {{ errorMessage }}
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" variant="text" @click="errorDialog = false">
+            Fechar
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -96,6 +143,11 @@ const roleStore = useRoleStore();
 const propostas = ref<ThesisProposal[]>([]);
 const loading = ref(true);
 const approving = ref<number | null>(null);
+const rejecting = ref<number | null>(null);
+const successDialog = ref(false);
+const errorDialog = ref(false);
+const successMessage = ref('');
+const errorMessage = ref('');
 
 onMounted(async () => {
   try {
@@ -121,7 +173,8 @@ const aprovarProposta = async (id: number) => {
     const currentUserId = userStore.user.id || (roleStore.currentPerson?.id || 0);
     
     if (!currentUserId) {
-      alert('Erro: Usuário não identificado. Por favor, selecione um usuário SC.');
+      errorMessage.value = 'Erro: Usuário não identificado. Por favor, selecione um usuário SC.';
+      errorDialog.value = true;
       return;
     }
 
@@ -133,12 +186,44 @@ const aprovarProposta = async (id: number) => {
     propostas.value = propostas.value.filter(p => p.id !== id);
     
     // Show success message
-    alert('Proposta aprovada com sucesso!');
+    successMessage.value = 'Proposta aprovada com sucesso!';
+    successDialog.value = true;
   } catch (error) {
     console.error('Erro ao aprovar proposta:', error);
-    alert('Erro ao aprovar proposta');
+    errorMessage.value = 'Erro ao aprovar proposta';
+    errorDialog.value = true;
   } finally {
     approving.value = null;
+  }
+};
+
+const rejeitarProposta = async (id: number) => {
+  try {
+    // Use user store ID if available, otherwise fall back to role store
+    const currentUserId = userStore.user.id || (roleStore.currentPerson?.id || 0);
+    
+    if (!currentUserId) {
+      errorMessage.value = 'Erro: Usuário não identificado. Por favor, selecione um usuário SC.';
+      errorDialog.value = true;
+      return;
+    }
+
+    rejecting.value = id;
+    // Pass the current SC user's ID to the backend
+    await RemoteServices.rejectProposal(id, currentUserId);
+    
+    // Remove the rejected proposal from the list
+    propostas.value = propostas.value.filter(p => p.id !== id);
+    
+    // Show success message
+    successMessage.value = 'Proposta rejeitada com sucesso!';
+    successDialog.value = true;
+  } catch (error) {
+    console.error('Erro ao rejeitar proposta:', error);
+    errorMessage.value = 'Erro ao rejeitar proposta';
+    errorDialog.value = true;
+  } finally {
+    rejecting.value = null;
   }
 };
 </script>

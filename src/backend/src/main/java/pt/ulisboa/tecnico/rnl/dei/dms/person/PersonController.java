@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import pt.ulisboa.tecnico.rnl.dei.dms.person.dto.PersonDto;
+import pt.ulisboa.tecnico.rnl.dei.dms.person.dto.StudentDto;
 import pt.ulisboa.tecnico.rnl.dei.dms.person.service.PersonService;
 
 @RestController
@@ -42,5 +43,10 @@ public class PersonController {
 	@DeleteMapping("/people/{id}")
 	public void deletePerson(@PathVariable long id) {
 		personService.deletePerson(id);
+	}
+
+	@GetMapping("/people/students")
+	public List<StudentDto> getStudents() {
+		return personService.getStudents();
 	}
 }

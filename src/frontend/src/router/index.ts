@@ -10,6 +10,7 @@ import SubmeterFenixTeseView from '@/views/SubmeterFenixTeseView.vue'
 import AgendarDefesaView from '@/views/AgendarDefesaView.vue'
 import { useRoleStore } from '@/stores/role'
 import SubmeterNotaFenixView from '../views/SubmeterNotaFenixView.vue'
+import AlunosView from '@/views/AlunosView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -65,6 +66,11 @@ const router = createRouter({
       path: '/submeter-nota',
       name: 'submeter-nota',
       component: SubmeterNotaFenixView
+    },
+    {
+      path: '/alunos',
+      name: 'alunos',
+      component: AlunosView
     },
   ]
 })

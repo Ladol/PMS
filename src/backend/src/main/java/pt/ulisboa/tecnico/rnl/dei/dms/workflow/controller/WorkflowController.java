@@ -71,6 +71,14 @@ public class WorkflowController {
         workflowService.approveProposal(id, scId);
         return ResponseEntity.ok().build();
     }
+    
+    @PostMapping("/proposals/{id}/reject")
+    public ResponseEntity<Void> rejectProposal(
+            @PathVariable Long id,
+            @RequestBody Long scId) {
+        workflowService.rejectProposal(id, scId);
+        return ResponseEntity.ok().build();
+    }
 
     @PostMapping("/proposals/{id}/assign-president")
     public ResponseEntity<Void> assignJuryPresident(

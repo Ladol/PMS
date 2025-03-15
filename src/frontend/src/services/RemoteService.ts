@@ -70,6 +70,10 @@ export default class RemoteServices {
   static async approveProposal(id: number, scId: number) {
     return httpClient.post(`/api/workflows/proposals/${id}/approve`, scId)
   }
+  
+  static async rejectProposal(id: number, scId: number) {
+    return httpClient.post(`/api/workflows/proposals/${id}/reject`, scId)
+  }
   static async assignJuryPresident(id: number, coordinatorId: number, presidentId: number) {
     return httpClient.post(`/api/workflows/proposals/${id}/assign-president`, {
       coordinatorId,
@@ -130,6 +134,10 @@ export default class RemoteServices {
   
   static async updatePerson(person: PersonDto): Promise<PersonDto> {
     return httpClient.put(`/people/${person.id}`, person)
+  }
+  
+  static async getStudents() {
+    return httpClient.get('/people/students')
   }
 }
 

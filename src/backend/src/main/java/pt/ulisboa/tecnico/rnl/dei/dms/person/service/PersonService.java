@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.rnl.dei.dms.person.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,14 +10,21 @@ import org.springframework.transaction.annotation.Transactional;
 import pt.ulisboa.tecnico.rnl.dei.dms.exceptions.DEIException;
 import pt.ulisboa.tecnico.rnl.dei.dms.exceptions.ErrorMessage;
 import pt.ulisboa.tecnico.rnl.dei.dms.person.domain.Person;
+import pt.ulisboa.tecnico.rnl.dei.dms.person.domain.Person.PersonType;
 import pt.ulisboa.tecnico.rnl.dei.dms.person.dto.PersonDto;
+import pt.ulisboa.tecnico.rnl.dei.dms.person.dto.StudentDto;
 import pt.ulisboa.tecnico.rnl.dei.dms.person.repository.PersonRepository;
+import pt.ulisboa.tecnico.rnl.dei.dms.workflow.domain.ThesisProposal;
+import pt.ulisboa.tecnico.rnl.dei.dms.workflow.repository.ThesisProposalRepository;
 @Service
 @Transactional
 public class PersonService {
 
 	@Autowired
 	private PersonRepository personRepository;
+
+	@Autowired
+	private ThesisProposalRepository thesisProposalRepository;
 
 	private Person fetchPersonOrThrow(long id) {
 		return personRepository.findById(id)
@@ -88,4 +96,17 @@ public class PersonService {
 
 		personRepository.deleteById(id);
 	}
+    
+    @Transactional
+    public List<StudentDto> getStudents() {
+        List<Person> students = personRepository.findByType(PersonType.STUDENT);
+        
+        return students.stream()
+            .map(student -> {
+                // Find the thesis proposal for this student
+                ThesisProposal proposal = thesisProposalRepository.findByStudentId(student.getId()).orElse(null);
+                return new StudentDto(student, proposal);
+            })
+            .collect(Collectors.toList());
+    }
 }

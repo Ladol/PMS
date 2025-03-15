@@ -109,6 +109,30 @@ public class WorkflowService {
     }
     
     @Transactional
+    public void rejectProposal(Long id, Long scId) {
+        ThesisProposal proposal = proposalRepository.findById(id)
+            .orElseThrow(() -> new DEIException(ErrorMessage.NOT_FOUND, "Proposal with id " + id + " not found"));
+        
+        Person sc = personRepository.findById(scId)
+            .orElseThrow(() -> new DEIException(ErrorMessage.NO_SUCH_PERSON, scId.toString()));
+            
+        if (!sc.getType().equals(PersonType.SC)) {
+            throw new DEIException(ErrorMessage.INVALID_USER_TYPE, "Only SC members can reject proposals");
+        }
+        
+        if (proposal.getThesisState() != ThesisState.PROPOSTA_JURI_SUBMETIDA) {
+            throw new DEIException(ErrorMessage.INVALID_STATE_TRANSITION, 
+                "Proposal must be in PROPOSTA_JURI_SUBMETIDA state to be rejected");
+        }
+        
+        proposal.setThesisState(ThesisState.REJEITADO_PELO_SC);
+        proposal.setScApprover(sc);
+        proposal.setScApprovalDate(LocalDateTime.now());
+        
+        proposalRepository.save(proposal);
+    }
+    
+    @Transactional
     public void assignJuryPresident(Long id, Long coordinatorId, Long presidentId) {
         ThesisProposal proposal = proposalRepository.findById(id)
             .orElseThrow(() -> new DEIException(ErrorMessage.NOT_FOUND, "Proposal with id " + id + " not found"));

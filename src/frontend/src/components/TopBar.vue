@@ -15,6 +15,7 @@ const roleStore = useRoleStore()
 const navbarItems = computed(() => [
   { name: 'Pessoal', path: '/people', icon: 'mdi-account-group' },
   { name: 'Estatísticas', path: '/statistics', icon: 'mdi-chart-bar' },
+  { name: 'Alunos', path: '/alunos', icon: 'mdi-school-outline' },
   ...(roleStore.isStudent ? [
     { name: 'Propor Júri', path: '/propor-juri', icon: 'mdi-account-multiple-plus' }
   ] : []),
