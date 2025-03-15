@@ -22,6 +22,7 @@ import pt.ulisboa.tecnico.rnl.dei.dms.workflow.dto.ThesisProposalDto;
 import pt.ulisboa.tecnico.rnl.dei.dms.workflow.dto.AssignPresidentRequest;
 import pt.ulisboa.tecnico.rnl.dei.dms.workflow.dto.GradeThesisRequest;
 import pt.ulisboa.tecnico.rnl.dei.dms.workflow.dto.UpdateDefenseStateRequest;
+import pt.ulisboa.tecnico.rnl.dei.dms.workflow.dto.RevertStateRequest;
 import pt.ulisboa.tecnico.rnl.dei.dms.workflow.domain.ThesisState;
 import pt.ulisboa.tecnico.rnl.dei.dms.workflow.service.WorkflowService;
 import pt.ulisboa.tecnico.rnl.dei.dms.workflow.service.ThesisProposalService;
@@ -149,6 +150,14 @@ public class WorkflowController {
             @PathVariable Long id,
             @RequestBody UpdateDefenseStateRequest request) {
         workflowService.updateDefenseState(id, request.defenseState());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/proposals/{id}/revert-state")
+    public ResponseEntity<Void> revertState(
+            @PathVariable Long id,
+            @RequestBody RevertStateRequest request) {
+        workflowService.revertState(id, request.coordinatorId());
         return ResponseEntity.ok().build();
     }
 }

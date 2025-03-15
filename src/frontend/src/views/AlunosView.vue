@@ -40,9 +40,9 @@
           <tr>
             <th class="text-left" width="30%">Nome</th>
             <th class="text-left" width="15%">IST ID</th>
-            <th class="text-left" width="30%">Email</th>
+            <th class="text-left" width="25%">Email</th>
             <th class="text-left" width="20%">Estado da Tese</th>
-            <th class="text-left" width="5%">Ações</th>
+            <th class="text-left" width="10%">Ações</th>
           </tr>
         </thead>
         <tbody>
@@ -50,12 +50,11 @@
             v-for="student in filteredStudents" 
             :key="student.id"
             class="cursor-pointer hover-row"
-            @click="viewStudentDetails(student.id)"
           >
-            <td class="text-left" width="30%">{{ student.name }}</td>
-            <td class="text-left" width="15%">{{ student.istId }}</td>
-            <td class="text-left" width="30%">{{ student.email }}</td>
-            <td class="text-left" width="20%">
+            <td class="text-left" width="30%" @click="viewStudentDetails(student.id)">{{ student.name }}</td>
+            <td class="text-left" width="15%" @click="viewStudentDetails(student.id)">{{ student.istId }}</td>
+            <td class="text-left" width="25%" @click="viewStudentDetails(student.id)">{{ student.email }}</td>
+            <td class="text-left" width="20%" @click="viewStudentDetails(student.id)">
               <v-chip
                 v-if="student.defenseState"
                 :color="getStateColor(student.defenseState)"
@@ -71,20 +70,70 @@
                 {{ formatState(student.thesisState) }}
               </v-chip>
             </td>
-            <td class="text-left" width="5%">
-              <v-btn
-                icon
-                variant="text"
-                color="primary"
-                @click.stop="viewStudentDetails(student.id)"
-              >
-                <v-icon>mdi-eye</v-icon>
-              </v-btn>
+            <td class="text-left" width="10%">
+              <div class="d-flex">
+                <v-btn
+                  icon
+                  variant="text"
+                  color="primary"
+                  @click="viewStudentDetails(student.id)"
+                  class="mr-2"
+                >
+                  <v-icon>mdi-eye</v-icon>
+                </v-btn>
+                <v-btn
+                  v-if="student.thesisState || student.defenseState"
+                  icon
+                  variant="text"
+                  color="warning"
+                  @click="confirmRevertState(student)"
+                >
+                  <v-icon>mdi-undo</v-icon>
+                </v-btn>
+              </div>
             </td>
           </tr>
         </tbody>
       </v-table>
     </v-card>
+    
+    <!-- Confirmation Dialog -->
+    <v-dialog v-model="confirmDialog" max-width="500px">
+      <v-card>
+        <v-card-title class="text-h5">Confirmar Reversão</v-card-title>
+        <v-card-text>
+          Tem certeza que deseja reverter o estado atual de <strong>{{ selectedStudent?.name }}</strong>?
+          <div class="mt-2">
+            <strong>Estado Atual:</strong> 
+            <v-chip
+              :color="getStateColor(selectedStudent?.defenseState || selectedStudent?.thesisState)"
+              size="small"
+              class="ml-2"
+            >
+              {{ formatState(selectedStudent?.defenseState || selectedStudent?.thesisState) }}
+            </v-chip>
+          </div>
+          <div class="mt-2">
+            <strong>Reverter para:</strong> 
+            <v-chip
+              :color="getPreviousStateColor(selectedStudent)"
+              size="small"
+              class="ml-2"
+            >
+              {{ getPreviousState(selectedStudent) }}
+            </v-chip>
+          </div>
+          <div class="mt-4 text-red">
+            Esta ação não pode ser desfeita.
+          </div>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="blue-darken-1" variant="text" @click="confirmDialog = false">Cancelar</v-btn>
+          <v-btn color="warning" variant="flat" @click="revertState" :loading="reverting">Reverter</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -92,9 +141,11 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import RemoteServices from '@/services/RemoteService'
+import { useRoleStore } from '@/stores/role'
 
-// Add router
+// Add router and role store
 const router = useRouter()
+const roleStore = useRoleStore()
 
 interface Student {
   id: number;
@@ -221,6 +272,96 @@ const formatState = (state: string | null): string => {
 // Function to navigate to student details
 const viewStudentDetails = (studentId: number) => {
   router.push(`/students/${studentId}`)
+}
+
+// Add state for confirmation dialog
+const confirmDialog = ref(false)
+const selectedStudent = ref<Student | null>(null)
+const reverting = ref(false)
+
+// Function to show confirmation dialog
+const confirmRevertState = (student: Student) => {
+  selectedStudent.value = student
+  confirmDialog.value = true
+}
+
+// Function to get previous state name
+const getPreviousState = (student: Student | null): string => {
+  if (!student) return 'Desconhecido'
+  
+  if (student.defenseState) {
+    switch (student.defenseState) {
+      case 'DEFESA_AGENDADA': return 'Tese Submetida ao Fenix'
+      case 'EM_REVISAO': return 'Defesa Agendada'
+      case 'DEFESA_SUBMETIDO_AO_FENIX': return 'Em Revisão'
+      default: return 'Desconhecido'
+    }
+  } else if (student.thesisState) {
+    switch (student.thesisState) {
+      case 'PROPOSTA_JURI_SUBMETIDA': return 'Estado Inicial (Não pode reverter)'
+      case 'APROVADO_PELO_SC': return 'Proposta Submetida'
+      case 'REJEITADO_PELO_SC': return 'Proposta Submetida'
+      case 'PRESIDENTE_JURI_ATRIBUIDO': return 'Aprovada pelo SC'
+      case 'DOCUMENTO_ASSINADO': return 'Presidente Atribuído'
+      case 'TESE_SUBMETIDO_AO_FENIX': return 'Documento Assinado'
+      default: return 'Desconhecido'
+    }
+  }
+  
+  return 'Sem Estado'
+}
+
+// Function to get previous state color
+const getPreviousStateColor = (student: Student | null): string => {
+  if (!student) return 'grey'
+  
+  if (student.defenseState) {
+    switch (student.defenseState) {
+      case 'DEFESA_AGENDADA': return 'deep-purple'
+      case 'EM_REVISAO': return 'orange'
+      case 'DEFESA_SUBMETIDO_AO_FENIX': return 'amber-darken-2'
+      default: return 'grey'
+    }
+  } else if (student.thesisState) {
+    switch (student.thesisState) {
+      case 'PROPOSTA_JURI_SUBMETIDA': return 'grey'
+      case 'APROVADO_PELO_SC': return 'blue'
+      case 'REJEITADO_PELO_SC': return 'blue'
+      case 'PRESIDENTE_JURI_ATRIBUIDO': return 'green'
+      case 'DOCUMENTO_ASSINADO': return 'purple'
+      case 'TESE_SUBMETIDO_AO_FENIX': return 'teal'
+      default: return 'grey'
+    }
+  }
+  
+  return 'grey'
+}
+
+// Function to revert state
+const revertState = async () => {
+  if (!selectedStudent.value) return
+  
+  try {
+    reverting.value = true
+    const coordinatorId = roleStore.getCurrentPersonId
+    
+    if (!coordinatorId) {
+      throw new Error('Nenhum coordenador selecionado')
+    }
+    
+    await RemoteServices.revertState(selectedStudent.value.id, coordinatorId)
+    
+    // Refresh the student list
+    const response = await RemoteServices.getStudents()
+    students.value = Array.isArray(response) ? response : response.data
+    
+    confirmDialog.value = false
+    selectedStudent.value = null
+  } catch (error) {
+    console.error('Erro ao reverter estado:', error)
+  } finally {
+    reverting.value = false
+  }
 }
 </script>
 

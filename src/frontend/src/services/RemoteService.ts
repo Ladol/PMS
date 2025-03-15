@@ -143,6 +143,12 @@ export default class RemoteServices {
   static async getStudent(id: number) {
     return httpClient.get(`/people/student/${id}`);
   }
+
+  static async revertState(id: number, coordinatorId: number) {
+    return httpClient.post(`/api/workflows/proposals/${id}/revert-state`, {
+      coordinatorId
+    });
+  }
 }
 
 httpClient.interceptors.request.use((request) => request, RemoteServices.handleError)

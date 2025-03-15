@@ -312,4 +312,66 @@ public class WorkflowService {
         
         proposalRepository.save(proposal);
     }
+
+    @Transactional
+    public void revertState(Long id, Long coordinatorId) {
+        ThesisProposal proposal = proposalRepository.findById(id)
+            .orElseThrow(() -> new DEIException(ErrorMessage.NOT_FOUND, "Proposal with id " + id + " not found"));
+            
+        // Handle defense state reversion first
+        if (proposal.getDefenseState() != null) {
+            switch (proposal.getDefenseState()) {
+                case DEFESA_AGENDADA:
+                    proposal.setDefenseState(null);
+                    proposal.setDefenseScheduler(null);
+                    proposal.setDefenseScheduleDate(null);
+                    proposal.setPlannedDefenseDate(null);
+                    break;
+                case EM_REVISAO:
+                    proposal.setDefenseState(DefenseState.DEFESA_AGENDADA);
+                    break;
+                case DEFESA_SUBMETIDO_AO_FENIX:
+                    proposal.setDefenseState(DefenseState.EM_REVISAO);
+                    break;
+            }
+        } 
+        // If no defense state, revert thesis state
+        else {
+            switch (proposal.getThesisState()) {
+                case PROPOSTA_JURI_SUBMETIDA:
+                    // Can't revert initial state
+                    throw new DEIException(ErrorMessage.INVALID_STATE_TRANSITION, 
+                        "Cannot revert from initial state PROPOSTA_JURI_SUBMETIDA");
+                case APROVADO_PELO_SC:
+                    proposal.setThesisState(ThesisState.PROPOSTA_JURI_SUBMETIDA);
+                    proposal.setScApprover(null);
+                    proposal.setScApprovalDate(null);
+                    break;
+                case REJEITADO_PELO_SC:
+                    proposal.setThesisState(ThesisState.PROPOSTA_JURI_SUBMETIDA);
+                    proposal.setScApprover(null);
+                    proposal.setScApprovalDate(null);
+                    break;
+                case PRESIDENTE_JURI_ATRIBUIDO:
+                    proposal.setThesisState(ThesisState.APROVADO_PELO_SC);
+                    proposal.setJuryPresident(null);
+                    proposal.setCoordinatorAssigner(null);
+                    proposal.setPresidentAssignmentDate(null);
+                    break;
+                case DOCUMENTO_ASSINADO:
+                    proposal.setThesisState(ThesisState.PRESIDENTE_JURI_ATRIBUIDO);
+                    proposal.setDocumentSigner(null);
+                    proposal.setDocumentSignDate(null);
+                    proposal.setSignedDocumentPath(null);
+                    break;
+                case TESE_SUBMETIDO_AO_FENIX:
+                    proposal.setThesisState(ThesisState.DOCUMENTO_ASSINADO);
+                    proposal.setFenixSubmitter(null);
+                    proposal.setFenixSubmissionDate(null);
+                    break;
+            }
+        }
+        
+        proposalRepository.save(proposal);
+    }
 }
