@@ -61,6 +61,24 @@
         </tbody>
       </v-table>
     </v-card>
+    
+    <!-- Success Dialog -->
+    <v-dialog v-model="successDialog" max-width="400">
+      <v-card>
+        <v-card-title class="text-h5 bg-success text-white">
+          Sucesso
+        </v-card-title>
+        <v-card-text class="pt-4">
+          Presidente de júri atribuído com sucesso!
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" variant="text" @click="successDialog = false">
+            Fechar
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -109,6 +127,7 @@ const propostas = ref<ThesisProposal[]>([]);
 const loading = ref(true);
 const assigning = ref<number | null>(null);
 const selectedPresidents = reactive<Record<number, JuryMember>>({});
+const successDialog = ref(false);
 
 onMounted(async () => {
   try {
@@ -149,8 +168,8 @@ const atribuirPresidente = async (id: number) => {
     // Remove the assigned proposal from the list
     propostas.value = propostas.value.filter(p => p.id !== id);
     
-    // Show success message
-    alert('Presidente de júri atribuído com sucesso!');
+    // Show success dialog
+    successDialog.value = true;
   } catch (error) {
     console.error('Erro ao atribuir presidente de júri:', error);
     alert('Erro ao atribuir presidente de júri');

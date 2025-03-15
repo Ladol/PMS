@@ -79,6 +79,42 @@
         </tbody>
       </v-table>
     </v-card>
+    
+    <!-- Success Dialog -->
+    <v-dialog v-model="successDialog" max-width="400">
+      <v-card>
+        <v-card-title class="text-h5 bg-success text-white">
+          Sucesso
+        </v-card-title>
+        <v-card-text class="pt-4">
+          Defesa agendada com sucesso!
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" variant="text" @click="successDialog = false">
+            Fechar
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    
+    <!-- Error Dialog -->
+    <v-dialog v-model="errorDialog" max-width="400">
+      <v-card>
+        <v-card-title class="text-h5 bg-error text-white">
+          Erro
+        </v-card-title>
+        <v-card-text class="pt-4">
+          {{ errorMessage }}
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" variant="text" @click="errorDialog = false">
+            Fechar
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -131,6 +167,9 @@ const dateMenus = reactive<Record<number, boolean>>({});
 const selectedDays = reactive<Record<number, number>>({});
 const selectedMonths = reactive<Record<number, number>>({});
 const selectedYears = reactive<Record<number, number>>({});
+const successDialog = ref(false);
+const errorDialog = ref(false);
+const errorMessage = ref('');
 
 // Generate arrays for days, months, and years
 const days = Array.from({ length: 31 }, (_, i) => i + 1);
@@ -204,12 +243,14 @@ const agendarDefesa = async (id: number) => {
     const currentCoordinatorId = roleStore.currentPerson?.id;
     
     if (!currentCoordinatorId) {
-      alert('Erro: Coordenador não identificado. Por favor, selecione um coordenador.');
+      errorMessage.value = 'Erro: Coordenador não identificado. Por favor, selecione um coordenador.';
+      errorDialog.value = true;
       return;
     }
 
     if (!selectedDates[id]) {
-      alert('Por favor, selecione uma data para a defesa.');
+      errorMessage.value = 'Por favor, selecione uma data para a defesa.';
+      errorDialog.value = true;
       return;
     }
 
@@ -223,11 +264,12 @@ const agendarDefesa = async (id: number) => {
     // Remove the scheduled proposal from the list
     propostas.value = propostas.value.filter(p => p.id !== id);
     
-    // Show success message
-    alert('Defesa agendada com sucesso!');
+    // Show success dialog
+    successDialog.value = true;
   } catch (error) {
     console.error('Erro ao agendar defesa:', error);
-    alert('Erro ao agendar defesa');
+    errorMessage.value = 'Erro ao agendar defesa';
+    errorDialog.value = true;
   } finally {
     scheduling.value = null;
   }

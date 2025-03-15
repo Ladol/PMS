@@ -14,26 +14,26 @@
       <v-table>
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Aluno</th>
-            <th>Data de Submissão</th>
-            <th>Membros do Júri</th>
-            <th>Ações</th>
+            <th class="text-left" width="5%">ID</th>
+            <th class="text-left" width="20%">Aluno</th>
+            <th class="text-left" width="20%">Data de Submissão</th>
+            <th class="text-left" width="40%">Membros do Júri</th>
+            <th class="text-center" width="15%">Ações</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="proposta in propostas" :key="proposta.id">
-            <td>{{ proposta.id }}</td>
-            <td>{{ proposta.student.name }}</td>
-            <td>{{ formatDate(proposta.submissionDate) }}</td>
-            <td>
+            <td class="text-left">{{ proposta.id }}</td>
+            <td class="text-left">{{ proposta.student.name }}</td>
+            <td class="text-left">{{ formatDate(proposta.submissionDate) }}</td>
+            <td class="text-left">
               <v-chip-group>
                 <v-chip v-for="membro in proposta.juryMembers" :key="membro.id">
                   {{ membro.name }}
                 </v-chip>
               </v-chip-group>
             </td>
-            <td>
+            <td class="text-center">
               <v-btn 
                 color="success" 
                 size="small"

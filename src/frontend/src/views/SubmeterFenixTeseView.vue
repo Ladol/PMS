@@ -47,6 +47,42 @@
         </tbody>
       </v-table>
     </v-card>
+    
+    <!-- Success Dialog -->
+    <v-dialog v-model="successDialog" max-width="400">
+      <v-card>
+        <v-card-title class="text-h5 bg-success text-white">
+          Sucesso
+        </v-card-title>
+        <v-card-text class="pt-4">
+          Proposta submetida ao Fenix com sucesso!
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" variant="text" @click="successDialog = false">
+            Fechar
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    
+    <!-- Error Dialog -->
+    <v-dialog v-model="errorDialog" max-width="400">
+      <v-card>
+        <v-card-title class="text-h5 bg-error text-white">
+          Erro
+        </v-card-title>
+        <v-card-text class="pt-4">
+          {{ errorMessage }}
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" variant="text" @click="errorDialog = false">
+            Fechar
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -94,6 +130,9 @@ const roleStore = useRoleStore();
 const propostas = ref<ThesisProposal[]>([]);
 const loading = ref(true);
 const submitting = ref<number | null>(null);
+const successDialog = ref(false);
+const errorDialog = ref(false);
+const errorMessage = ref('');
 
 onMounted(async () => {
   try {
@@ -112,7 +151,8 @@ const submeterAoFenix = async (id: number) => {
     const currentStaffId = roleStore.currentPerson?.id;
     
     if (!currentStaffId) {
-      alert('Erro: Staff não identificado. Por favor, selecione um utilizador staff.');
+      errorMessage.value = 'Erro: Staff não identificado. Por favor, selecione um utilizador staff.';
+      errorDialog.value = true;
       return;
     }
 
@@ -122,11 +162,12 @@ const submeterAoFenix = async (id: number) => {
     // Remove the submitted proposal from the list
     propostas.value = propostas.value.filter(p => p.id !== id);
     
-    // Show success message
-    alert('Proposta submetida ao Fenix com sucesso!');
+    // Show success dialog
+    successDialog.value = true;
   } catch (error) {
     console.error('Erro ao submeter proposta ao Fenix:', error);
-    alert('Erro ao submeter proposta ao Fenix');
+    errorMessage.value = 'Erro ao submeter proposta ao Fenix';
+    errorDialog.value = true;
   } finally {
     submitting.value = null;
   }
