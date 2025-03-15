@@ -139,6 +139,10 @@ export default class RemoteServices {
   static async getStudents() {
     return httpClient.get('/people/students')
   }
+
+  static async getStudent(id: number) {
+    return httpClient.get(`/people/student/${id}`);
+  }
 }
 
 httpClient.interceptors.request.use((request) => request, RemoteServices.handleError)

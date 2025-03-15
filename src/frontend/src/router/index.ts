@@ -72,6 +72,11 @@ const router = createRouter({
       name: 'alunos',
       component: AlunosView
     },
+    {
+      path: '/students/:id',
+      name: 'StudentDetail',
+      component: () => import('@/views/StudentDetailView.vue')
+    }
   ]
 })
 

@@ -49,4 +49,9 @@ public class PersonController {
 	public List<StudentDto> getStudents() {
 		return personService.getStudents();
 	}
+
+	@GetMapping("/people/student/{id}")
+	public StudentDto getStudentDetails(@PathVariable long id) {
+		return personService.getStudent(id);
+	}
 }

@@ -109,4 +109,16 @@ public class PersonService {
             })
             .collect(Collectors.toList());
     }
+
+	@Transactional
+	public StudentDto getStudent(long id) {
+		Person student = fetchPersonOrThrow(id);
+		if (student.getType() != PersonType.STUDENT) {
+			throw new DEIException(ErrorMessage.NO_SUCH_PERSON, Long.toString(id));
+		}
+		
+		// Find the thesis proposal for this student
+		ThesisProposal proposal = thesisProposalRepository.findByStudentId(student.getId()).orElse(null);
+		return new StudentDto(student, proposal);
+	}
 }

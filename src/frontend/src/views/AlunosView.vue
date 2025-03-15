@@ -41,15 +41,21 @@
             <th class="text-left" width="30%">Nome</th>
             <th class="text-left" width="15%">IST ID</th>
             <th class="text-left" width="30%">Email</th>
-            <th class="text-left" width="25%">Estado da Tese</th>
+            <th class="text-left" width="20%">Estado da Tese</th>
+            <th class="text-left" width="5%">Ações</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="student in filteredStudents" :key="student.id">
+          <tr 
+            v-for="student in filteredStudents" 
+            :key="student.id"
+            class="cursor-pointer hover-row"
+            @click="viewStudentDetails(student.id)"
+          >
             <td class="text-left" width="30%">{{ student.name }}</td>
             <td class="text-left" width="15%">{{ student.istId }}</td>
             <td class="text-left" width="30%">{{ student.email }}</td>
-            <td class="text-left" width="25%">
+            <td class="text-left" width="20%">
               <v-chip
                 v-if="student.defenseState"
                 :color="getStateColor(student.defenseState)"
@@ -65,6 +71,16 @@
                 {{ formatState(student.thesisState) }}
               </v-chip>
             </td>
+            <td class="text-left" width="5%">
+              <v-btn
+                icon
+                variant="text"
+                color="primary"
+                @click.stop="viewStudentDetails(student.id)"
+              >
+                <v-icon>mdi-eye</v-icon>
+              </v-btn>
+            </td>
           </tr>
         </tbody>
       </v-table>
@@ -74,7 +90,11 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import RemoteServices from '@/services/RemoteService'
+
+// Add router
+const router = useRouter()
 
 interface Student {
   id: number;
@@ -197,4 +217,18 @@ const formatState = (state: string | null): string => {
   
   return stateMap[state] || state;
 };
+
+// Function to navigate to student details
+const viewStudentDetails = (studentId: number) => {
+  router.push(`/students/${studentId}`)
+}
 </script>
+
+<style scoped>
+.hover-row:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+.cursor-pointer {
+  cursor: pointer;
+}
+</style>
