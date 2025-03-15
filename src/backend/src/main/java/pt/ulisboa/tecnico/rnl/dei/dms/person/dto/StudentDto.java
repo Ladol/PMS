@@ -9,7 +9,8 @@ public record StudentDto(
     String istId, 
     String email, 
     String type,
-    String thesisState
+    String thesisState,
+    String defenseState
 ) {
     public StudentDto(Person person, ThesisProposal proposal) {
         this(
@@ -18,7 +19,8 @@ public record StudentDto(
             person.getIstId(), 
             person.getEmail(),
             person.getType().toString(),
-            proposal != null ? proposal.getThesisState().toString() : null
+            proposal != null ? proposal.getThesisState().toString() : null,
+            proposal != null ? (proposal.getDefenseState() != null ? proposal.getDefenseState().toString() : null) : null
         );
     }
     
@@ -29,6 +31,7 @@ public record StudentDto(
             person.getIstId(), 
             person.getEmail(),
             person.getType().toString(),
+            null,
             null
         );
     }

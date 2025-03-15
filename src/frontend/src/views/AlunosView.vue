@@ -11,15 +11,29 @@
     </v-alert>
     
     <v-card v-else class="pa-6">
-      <v-text-field
-        v-model="search"
-        label="Pesquisar"
-        prepend-icon="mdi-magnify"
-        single-line
-        variant="outlined"
-        hide-details
-        class="mb-4"
-      ></v-text-field>
+      <div class="d-flex flex-wrap gap-4 mb-4">
+        <v-text-field
+          v-model="search"
+          label="Pesquisar"
+          prepend-icon="mdi-magnify"
+          single-line
+          variant="outlined"
+          hide-details
+          class="flex-grow-1"
+        ></v-text-field>
+        
+        <v-select
+          v-model="stateFilter"
+          :items="thesisStateOptions"
+          label="Filtrar por Estado"
+          prepend-icon="mdi-filter-variant"
+          variant="outlined"
+          hide-details
+          class="flex-grow-0"
+          style="min-width: 250px;"
+          clearable
+        ></v-select>
+      </div>
       
       <v-table>
         <thead>
@@ -37,10 +51,18 @@
             <td class="text-left" width="30%">{{ student.email }}</td>
             <td class="text-left" width="25%">
               <v-chip
+                v-if="student.defenseState"
+                :color="getStateColor(student.defenseState)"
+                size="small"
+              >
+                {{ formatState(student.defenseState) }}
+              </v-chip>
+              <v-chip
+                v-else
                 :color="getStateColor(student.thesisState)"
                 size="small"
               >
-                {{ formatThesisState(student.thesisState) }}
+                {{ formatState(student.thesisState) }}
               </v-chip>
             </td>
           </tr>
@@ -60,11 +82,29 @@ interface Student {
   istId: string;
   email: string;
   thesisState: string | null;
+  defenseState: string | null;
 }
 
 const students = ref<Student[]>([]);
 const loading = ref(true);
 const search = ref('');
+const stateFilter = ref('');
+
+// Define thesis state options for the dropdown
+const thesisStateOptions = [
+  { title: 'Sem Tese', value: 'null' },
+  // Thesis States
+  { title: 'Proposta Submetida', value: 'thesis:PROPOSTA_JURI_SUBMETIDA' },
+  { title: 'Aprovada pelo SC', value: 'thesis:APROVADO_PELO_SC' },
+  { title: 'Rejeitada pelo SC', value: 'thesis:REJEITADO_PELO_SC' },
+  { title: 'Presidente Atribuído', value: 'thesis:PRESIDENTE_JURI_ATRIBUIDO' },
+  { title: 'Documento Assinado', value: 'thesis:DOCUMENTO_ASSINADO' },
+  { title: 'Tese Submetida ao Fenix', value: 'thesis:TESE_SUBMETIDO_AO_FENIX' },
+  // Defense States
+  { title: 'Defesa Agendada', value: 'defense:DEFESA_AGENDADA' },
+  { title: 'Em Revisão', value: 'defense:EM_REVISAO' },
+  { title: 'Defesa Submetida ao Fenix', value: 'defense:DEFESA_SUBMETIDO_AO_FENIX' }
+];
 
 onMounted(async () => {
   try {
@@ -79,44 +119,82 @@ onMounted(async () => {
 });
 
 const filteredStudents = computed(() => {
-  if (!search.value) return students.value;
+  let result = students.value;
   
-  const searchLower = search.value.toLowerCase();
-  return students.value.filter(student => 
-    student.name.toLowerCase().includes(searchLower) ||
-    student.istId.toLowerCase().includes(searchLower) ||
-    student.email.toLowerCase().includes(searchLower) ||
-    (student.thesisState && formatThesisState(student.thesisState).toLowerCase().includes(searchLower))
-  );
+  // Apply thesis state filter if selected
+  if (stateFilter.value) {
+    if (stateFilter.value === 'null') {
+      result = result.filter(student => !student.thesisState && !student.defenseState);
+    } else if (stateFilter.value.startsWith('thesis:')) {
+      const thesisStateValue = stateFilter.value.replace('thesis:', '');
+      result = result.filter(student => student.thesisState === thesisStateValue);
+    } else if (stateFilter.value.startsWith('defense:')) {
+      const defenseStateValue = stateFilter.value.replace('defense:', '');
+      result = result.filter(student => student.defenseState === defenseStateValue);
+    }
+  }
+  
+  // Apply text search filter
+  if (search.value) {
+    const searchLower = search.value.toLowerCase();
+    result = result.filter(student => 
+      student.name.toLowerCase().includes(searchLower) ||
+      student.istId.toLowerCase().includes(searchLower) ||
+      student.email.toLowerCase().includes(searchLower) ||
+      (getDisplayState(student).toLowerCase().includes(searchLower))
+    );
+  }
+  
+  return result;
 });
 
-const formatThesisState = (state: string | null): string => {
-  if (!state) return 'Sem Tese';
-  
-  const stateMap: Record<string, string> = {
-    'PROPOSTA_JURI_SUBMETIDA': 'Proposta Submetida',
-    'APROVADO_PELO_SC': 'Aprovada pelo SC',
-    'REJEITADO_PELO_SC': 'Rejeitada pelo SC',
-    'PRESIDENTE_JURI_ATRIBUIDO': 'Presidente Atribuído',
-    'DOCUMENTO_ASSINADO': 'Documento Assinado',
-    'SUBMETIDO_AO_FENIX': 'Submetida ao Fénix'
-  };
-  
-  return stateMap[state] || state;
+// Helper function to determine which state to display
+const getDisplayState = (student: Student): string => {
+  // If there's a defense state, prioritize it
+  if (student.defenseState) {
+    return formatState(student.defenseState);
+  }
+  // Otherwise use thesis state
+  return formatState(student.thesisState);
 };
 
 const getStateColor = (state: string | null): string => {
   if (!state) return 'grey';
   
   const colorMap: Record<string, string> = {
+    // Thesis States
     'PROPOSTA_JURI_SUBMETIDA': 'blue',
     'APROVADO_PELO_SC': 'green',
     'REJEITADO_PELO_SC': 'red',
     'PRESIDENTE_JURI_ATRIBUIDO': 'purple',
     'DOCUMENTO_ASSINADO': 'teal',
-    'SUBMETIDO_AO_FENIX': 'deep-purple'
+    'TESE_SUBMETIDO_AO_FENIX': 'deep-purple',
+    // Defense States
+    'DEFESA_AGENDADA': 'orange',
+    'EM_REVISAO': 'amber-darken-2',
+    'DEFESA_SUBMETIDO_AO_FENIX': 'light-blue'
   };
   
   return colorMap[state] || 'grey';
+};
+
+const formatState = (state: string | null): string => {
+  if (!state) return 'Sem Tese';
+  
+  const stateMap: Record<string, string> = {
+    // Defense States
+    'DEFESA_AGENDADA': 'Defesa Agendada',
+    'EM_REVISAO': 'Em Revisão',
+    'DEFESA_SUBMETIDO_AO_FENIX': 'Defesa Submetida ao Fenix',
+    // Thesis States
+    'PROPOSTA_JURI_SUBMETIDA': 'Proposta Submetida',
+    'APROVADO_PELO_SC': 'Aprovada pelo SC',
+    'REJEITADO_PELO_SC': 'Rejeitada pelo SC',
+    'PRESIDENTE_JURI_ATRIBUIDO': 'Presidente Atribuído',
+    'DOCUMENTO_ASSINADO': 'Documento Assinado',
+    'TESE_SUBMETIDO_AO_FENIX': 'Tese Submetida ao Fenix'
+  };
+  
+  return stateMap[state] || state;
 };
 </script>

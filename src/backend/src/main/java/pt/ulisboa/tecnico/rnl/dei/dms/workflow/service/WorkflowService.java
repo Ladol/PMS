@@ -220,7 +220,7 @@ public class WorkflowService {
                 "Proposal must be in DOCUMENTO_ASSINADO state to submit to Fenix");
         }
         
-        proposal.setThesisState(ThesisState.SUBMETIDO_AO_FENIX);
+        proposal.setThesisState(ThesisState.TESE_SUBMETIDO_AO_FENIX);
         proposal.setFenixSubmitter(staff);
         proposal.setFenixSubmissionDate(LocalDateTime.now());
         
@@ -239,7 +239,7 @@ public class WorkflowService {
             throw new DEIException(ErrorMessage.INVALID_USER_TYPE, "Only coordinators can schedule defenses");
         }
         
-        if (proposal.getThesisState() != ThesisState.SUBMETIDO_AO_FENIX) {
+        if (proposal.getThesisState() != ThesisState.TESE_SUBMETIDO_AO_FENIX) {
             throw new DEIException(ErrorMessage.INVALID_STATE_TRANSITION, 
                 "Proposal must be in SUBMETIDO_AO_FENIX state to schedule defense");
         }
@@ -254,7 +254,7 @@ public class WorkflowService {
     
     @Transactional
     public List<ThesisProposalDto> getSubmittedProposals() {
-        List<ThesisProposal> proposals = proposalRepository.findByThesisState(ThesisState.SUBMETIDO_AO_FENIX);
+        List<ThesisProposal> proposals = proposalRepository.findByThesisState(ThesisState.TESE_SUBMETIDO_AO_FENIX);
         System.out.println("Found " + proposals.size() + " submitted proposals");
         
         return proposals.stream()
@@ -305,7 +305,7 @@ public class WorkflowService {
             throw new DEIException(ErrorMessage.INVALID_OPERATION, "Grade must be between 0 and 20");
         }
         
-        proposal.setDefenseState(DefenseState.SUBMETIDO_AO_FENIX);
+        proposal.setDefenseState(DefenseState.DEFESA_SUBMETIDO_AO_FENIX);
         proposal.setGrader(coordinator);
         proposal.setGradingDate(LocalDateTime.now());
         proposal.setGrade(grade);

@@ -133,7 +133,7 @@ public class WorkflowController {
     @GetMapping("/proposals/for-defense-scheduling")
     public List<ThesisProposalDto> getProposalsForDefenseScheduling() {
         return thesisProposalService.findByThesisStateAndDefenseState(
-            ThesisState.SUBMETIDO_AO_FENIX, null)
+            ThesisState.TESE_SUBMETIDO_AO_FENIX, null)
             .stream()
             .map(proposal -> new ThesisProposalDto(proposal))
             .collect(Collectors.toList());

@@ -186,12 +186,12 @@ onMounted(async () => {
     let filteredProposals;
     if (Array.isArray(response)) {
       filteredProposals = response.filter((p: ThesisProposal) => 
-        p.thesisState === 'SUBMETIDO_AO_FENIX' && 
+        p.thesisState === 'TESE_SUBMETIDO_AO_FENIX' && 
         (p.defenseState === null || p.defenseState === '')
       );
     } else if (response.data) {
       filteredProposals = response.data.filter((p: ThesisProposal) => 
-        p.thesisState === 'SUBMETIDO_AO_FENIX' && 
+        p.thesisState === 'TESE_SUBMETIDO_AO_FENIX' && 
         (p.defenseState === null || p.defenseState === '')
       );
     } else {
