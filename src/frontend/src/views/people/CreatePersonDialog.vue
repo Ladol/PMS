@@ -15,13 +15,21 @@
         <v-card-text>
           <v-text-field label="Nome*" required v-model="newPerson.name"></v-text-field>
           <v-text-field label="IST ID*" required v-model="newPerson.istId"></v-text-field>
+          <v-text-field 
+            label="Email*" 
+            required 
+            v-model="newPerson.email"
+            :rules="[emailRules]"
+            hint="example@example.com"
+            persistent-hint
+          ></v-text-field>
 
-            <v-select
+          <v-select
             :items="['Coordenador', 'Staff', 'Aluno', 'Professor', 'SC']"
             label="Categoria*"
             required
             v-model="newPerson.type"
-            ></v-select>
+          ></v-select>
         </v-card-text>
 
         <v-divider></v-divider>
@@ -35,10 +43,8 @@
             color="primary"
             text="Save"
             variant="tonal"
-            @click="
-              dialog = false,
-              savePerson()
-            "
+            @click="savePerson"
+            :disabled="!isValidForm"
           ></v-btn>
         </v-card-actions>
       </v-card>
@@ -47,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import type PersonDto from '@/models/people/PersonDto'
 import RemoteService from '@/services/RemoteService'
 
@@ -65,16 +71,36 @@ const typeMappings = {
 
 const newPerson = ref<PersonDto>({
   name: '',
-  type: ''
+  type: '',
+  email: ''
+})
+
+const emailRules = (value: string) => {
+  const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return pattern.test(value) || 'Email inválido'
+}
+
+const isValidForm = computed(() => {
+  return (
+    newPerson.value.name && 
+    newPerson.value.istId && 
+    newPerson.value.type && 
+    newPerson.value.email && 
+    emailRules(newPerson.value.email) === true
+  )
 })
 
 const savePerson = async () => {
+  if (!isValidForm.value) return
+
   newPerson.value.type = typeMappings[newPerson.value.type as keyof typeof typeMappings]
   await RemoteService.createPerson(newPerson.value)
   newPerson.value = {
     name: '',
-    type: ''
+    type: '',
+    email: ''
   }
+  dialog.value = false
   emit('person-created')
 }
 </script>

@@ -4,6 +4,15 @@
       <h2 class="text-left ml-1">Listagem de Pessoas</h2>
     </v-col>
     <v-col cols="auto">
+      <v-btn 
+        color="secondary" 
+        class="mr-2" 
+        prepend-icon="mdi-database-import" 
+        @click="createSamplePeople"
+        :loading="creatingPeople"
+      >
+        Criar Pessoas de Exemplo
+      </v-btn>
       <CreatePersonDialog @person-created="getPeople" />
     </v-col>
   </v-row>
@@ -62,6 +71,8 @@ import { reactive, ref } from 'vue'
 
 let search = ref('')
 let loading = ref(true)
+let creatingPeople = ref(false)
+
 const headers = [
   { title: 'ID', key: 'id', value: 'id', sortable: true, filterable: false },
   {
@@ -75,6 +86,13 @@ const headers = [
     title: 'IST ID',
     key: 'istId',
     value: 'istId',
+    sortable: true,
+    filterable: true
+  },
+  {
+    title: 'Email',
+    key: 'email',
+    value: 'email',
     sortable: true,
     filterable: true
   },
@@ -120,30 +138,47 @@ const fuzzySearch = (value: string, search: string) => {
   return searchRegex.test(value)
 }
 
-/*
--- Insert 2 people of each type
-INSERT INTO public.people (id, ist_id, name, type) VALUES
--- Students
-(1, 'ist123456', 'Alice Johnson', 'STUDENT'),
-(2, 'ist234567', 'Bob Smith', 'STUDENT'),
-
--- Teachers
-(3, 'ist345678', 'Dr. Emily Davis', 'TEACHER'),
-(4, 'ist456789', 'Prof. Michael Brown', 'TEACHER'),
-
--- Staff
-(5, 'ist567890', 'Sarah Wilson', 'STAFF'),
-(6, 'ist678901', 'David Martinez', 'STAFF'),
-
--- SC (Student Committee)
-(7, 'ist789012', 'Laura Garcia', 'SC'),
-(8, 'ist890123', 'James Rodriguez', 'SC'),
-
--- Coordinators
-(9, 'ist901234', 'Dr. Olivia Taylor', 'COORDINATOR'),
-(10, 'ist012345', 'Prof. William Anderson', 'COORDINATOR');
-
--- Verify the inserted data
-SELECT * FROM public.people ORDER BY id ASC;
-*/
+const createSamplePeople = async () => {
+  creatingPeople.value = true
+  try {
+    const samplePeople = [
+      // Students
+      { istId: 'ist123456', name: 'Alice Johnson', type: 'STUDENT', email: 'alice.johnson@example.com' },
+      { istId: 'ist234567', name: 'Bob Smith', type: 'STUDENT', email: 'bob.smith@example.com' },
+      
+      // Teachers
+      { istId: 'ist345678', name: 'Dr. Emily Davis', type: 'TEACHER', email: 'emily.davis@example.com' },
+      { istId: 'ist456789', name: 'Prof. Michael Brown', type: 'TEACHER', email: 'michael.brown@example.com' },
+      
+      // Staff
+      { istId: 'ist567890', name: 'Sarah Wilson', type: 'STAFF', email: 'sarah.wilson@example.com' },
+      { istId: 'ist678901', name: 'David Martinez', type: 'STAFF', email: 'david.martinez@example.com' },
+      
+      // SC (Student Committee)
+      { istId: 'ist789012', name: 'Laura Garcia', type: 'SC', email: 'laura.garcia@example.com' },
+      { istId: 'ist890123', name: 'James Rodriguez', type: 'SC', email: 'james.rodriguez@example.com' },
+      
+      // Coordinators
+      { istId: 'ist901234', name: 'Dr. Olivia Taylor', type: 'COORDINATOR', email: 'olivia.taylor@example.com' },
+      { istId: 'ist012345', name: 'Prof. William Anderson', type: 'COORDINATOR', email: 'william.anderson@example.com' }
+    ]
+    
+    // Create each person sequentially
+    for (const person of samplePeople) {
+      try {
+        await RemoteService.createPerson(person)
+      } catch (error) {
+        console.error(`Failed to create person ${person.name}:`, error)
+      }
+    }
+    
+    // Refresh the people list
+    await getPeople()
+    
+  } catch (error) {
+    console.error('Error creating sample people:', error)
+  } finally {
+    creatingPeople.value = false
+  }
+}
 </script>

@@ -3,6 +3,7 @@ export default class PersonDto {
   name?: string
   istId?: string
   type?: string
+  email?: string
 
   constructor(obj?: Partial<PersonDto>) {
     Object.assign(this, obj)

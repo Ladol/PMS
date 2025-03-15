@@ -1,8 +1,6 @@
 package pt.ulisboa.tecnico.rnl.dei.dms.person.domain;
 
-
 import jakarta.persistence.*;
-
 import lombok.Data;
 import pt.ulisboa.tecnico.rnl.dei.dms.person.dto.PersonDto;
 
@@ -25,27 +23,27 @@ public class Person {
 	@Column(name = "ist_id", nullable = false, unique = true)
 	private String istId;
 
+	@Column(name = "email", nullable = false)
+	private String email;
+
 	@Column(name = "type", nullable = false)
 	@Enumerated(EnumType.STRING)
     private PersonType type;
 
-
-	// TODO: maybe add more fields? ...or maybe not? what makes sense here?
-
 	protected Person() {
 	}
 
-	public Person(String name, String istId, PersonType type) {
+	public Person(String name, String istId, String email, PersonType type) {
 		this.name = name;
 		this.istId = istId;
+		this.email = email;
 		this.type = type;
 	}
 
 	public Person(PersonDto personDto) {
-		this(personDto.name(), personDto.istId(),
+		this(personDto.name(), personDto.istId(), personDto.email(),
 				PersonType.valueOf(personDto.type().toUpperCase()));
 		System.out.println("PersonDto: " + personDto);
 		System.out.println("PersonType: " + personDto.type());
-
 	}
 }
