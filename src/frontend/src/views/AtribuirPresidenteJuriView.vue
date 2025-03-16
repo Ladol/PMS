@@ -165,6 +165,20 @@ const atribuirPresidente = async (id: number) => {
     assigning.value = id;
     await RemoteServices.assignJuryPresident(id, currentCoordinatorId, selectedPresident.id);
     
+    // Log the president assignment action
+    try {
+      const proposal = propostas.value.find(p => p.id === id);
+      if (proposal) {
+        await RemoteServices.logAction({
+          action: 'ASSIGNED_PRESIDENT',
+          person: roleStore.currentPerson?.name || 'Unknown Coordinator',
+          details: `Assigned ${selectedPresident.name} as jury president for student: ${proposal.student.name}`
+        });
+      }
+    } catch (logError) {
+      console.error('Failed to log president assignment action:', logError);
+    }
+    
     // Remove the assigned proposal from the list
     propostas.value = propostas.value.filter(p => p.id !== id);
     
