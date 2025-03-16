@@ -79,7 +79,7 @@ public class PersonService {
 			throw new DEIException(ErrorMessage.INVALID_PERSON_DATA, "IST ID cannot be empty");
 		}
 		
-		if (personDto.email() == null || !personDto.email().matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
+		if (personDto.email() == null || !personDto.email().matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
 			throw new DEIException(ErrorMessage.INVALID_PERSON_DATA, "Invalid email format");
 		}
 		

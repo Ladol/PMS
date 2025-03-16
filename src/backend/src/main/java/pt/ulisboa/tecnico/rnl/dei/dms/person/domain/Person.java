@@ -1,6 +1,8 @@
 package pt.ulisboa.tecnico.rnl.dei.dms.person.domain;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import pt.ulisboa.tecnico.rnl.dei.dms.person.dto.PersonDto;
 
@@ -17,12 +19,16 @@ public class Person {
 	@GeneratedValue
 	private Long id;
 
+	@NotBlank(message = "Name cannot be empty")
 	@Column(name = "name", nullable = false)
 	private String name;
 
+	@NotBlank(message = "IST ID cannot be empty")
 	@Column(name = "ist_id", nullable = false, unique = true)
 	private String istId;
 
+	@NotBlank(message = "Email cannot be empty")
+	@Email(regexp = "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", message = "Email must be valid")
 	@Column(name = "email", nullable = false)
 	private String email;
 
