@@ -29,39 +29,13 @@
             <td>{{ proposta.juryPresident?.name }}</td>
             <td>{{ formatDate(proposta.fenixSubmissionDate) }}</td>
             <td>
-              <div class="d-flex">
-                <!-- Day dropdown -->
-                <v-select
-                  v-model="selectedDays[proposta.id]"
-                  :items="days"
-                  label="Dia"
-                  density="compact"
-                  class="mr-2"
-                  style="width: 80px;"
-                  @update:model-value="updateSelectedDate(proposta.id)"
-                ></v-select>
-                
-                <!-- Month dropdown -->
-                <v-select
-                  v-model="selectedMonths[proposta.id]"
-                  :items="months"
-                  label="Mês"
-                  density="compact"
-                  class="mr-2"
-                  style="width: 120px;"
-                  @update:model-value="updateSelectedDate(proposta.id)"
-                ></v-select>
-                
-                <!-- Year dropdown -->
-                <v-select
-                  v-model="selectedYears[proposta.id]"
-                  :items="years"
-                  label="Ano"
-                  density="compact"
-                  style="width: 100px;"
-                  @update:model-value="updateSelectedDate(proposta.id)"
-                ></v-select>
-              </div>
+              <v-text-field
+                type="date"
+                v-model="selectedDates[proposta.id]"
+                label="Data de Defesa"
+                density="compact"
+                style="width: 200px;"
+              ></v-text-field>
             </td>
             <td>
               <v-btn 
@@ -163,19 +137,9 @@ const propostas = ref<ThesisProposal[]>([]);
 const loading = ref(true);
 const scheduling = ref<number | null>(null);
 const selectedDates = reactive<Record<number, string>>({});
-const dateMenus = reactive<Record<number, boolean>>({});
-const selectedDays = reactive<Record<number, number>>({});
-const selectedMonths = reactive<Record<number, number>>({});
-const selectedYears = reactive<Record<number, number>>({});
 const successDialog = ref(false);
 const errorDialog = ref(false);
 const errorMessage = ref('');
-
-// Generate arrays for days, months, and years
-const days = Array.from({ length: 31 }, (_, i) => i + 1);
-const months = Array.from({ length: 12 }, (_, i) => i + 1);
-const currentYear = new Date().getFullYear();
-const years = Array.from({ length: 5 }, (_, i) => currentYear + i);
 
 // Initialize the date selections
 onMounted(async () => {
@@ -199,16 +163,13 @@ onMounted(async () => {
     }
     
     propostas.value = filteredProposals;
-    console.log('Loaded proposals for defense scheduling:', propostas.value);
     
-    // Initialize date selections
+    // Initialize date selections with today's date in YYYY-MM-DD format
+    const today = new Date();
+    const formattedDate = today.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+    
     propostas.value.forEach(proposta => {
-      selectedDays[proposta.id] = new Date().getDate();
-      selectedMonths[proposta.id] = new Date().getMonth() + 1;
-      selectedYears[proposta.id] = currentYear;
-      dateMenus[proposta.id] = false;
-      selectedDates[proposta.id] = '';
-      updateSelectedDate(proposta.id);
+      selectedDates[proposta.id] = formattedDate;
     });
   } catch (error) {
     console.error('Erro ao carregar propostas para agendamento:', error);
@@ -217,20 +178,6 @@ onMounted(async () => {
     loading.value = false;
   }
 });
-
-// Update the selected date string when day, month, or year changes
-const updateSelectedDate = (id: number) => {
-  const day = selectedDays[id];
-  const month = selectedMonths[id];
-  const year = selectedYears[id];
-  
-  if (day && month && year) {
-    // Format as YYYY-MM-DD for ISO format
-    const monthStr = month.toString().padStart(2, '0');
-    const dayStr = day.toString().padStart(2, '0');
-    selectedDates[id] = `${year}-${monthStr}-${dayStr}`;
-  }
-};
 
 const formatDate = (dateString: string | undefined | null) => {
   if (!dateString) return '';
@@ -260,6 +207,20 @@ const agendarDefesa = async (id: number) => {
     const selectedDate = new Date(selectedDates[id] + 'T12:00:00');
     
     await RemoteServices.scheduleDefense(id, currentCoordinatorId, selectedDate.toISOString());
+    
+    // Log the defense scheduling action
+    try {
+      const proposal = propostas.value.find(p => p.id === id);
+      if (proposal) {
+        await RemoteServices.logAction({
+          action: 'SCHEDULED_DEFENSE',
+          person: roleStore.currentPerson?.name || 'Unknown Coordinator',
+          details: `Scheduled defense for student: ${proposal.student.name}, Date: ${selectedDates[id]}`
+        });
+      }
+    } catch (logError) {
+      console.error('Failed to log defense scheduling action:', logError);
+    }
     
     // Remove the scheduled proposal from the list
     propostas.value = propostas.value.filter(p => p.id !== id);
