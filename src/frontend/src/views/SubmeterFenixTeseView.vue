@@ -159,6 +159,20 @@ const submeterAoFenix = async (id: number) => {
     submitting.value = id;
     await RemoteServices.submitToFenix(id, currentStaffId);
     
+    // Log the Fenix submission action
+    try {
+      const proposal = propostas.value.find(p => p.id === id);
+      if (proposal) {
+        await RemoteServices.logAction({
+          action: 'SUBMITTED_TO_FENIX',
+          person: roleStore.currentPerson?.name || 'Unknown Staff',
+          details: `Submitted thesis to Fenix for student: ${proposal.student.name}, Proposal ID: ${id}`
+        });
+      }
+    } catch (logError) {
+      console.error('Failed to log Fenix submission action:', logError);
+    }
+    
     // Remove the submitted proposal from the list
     propostas.value = propostas.value.filter(p => p.id !== id);
     
