@@ -127,7 +127,8 @@ const actionTypes = [
   'SIGNED_DOCUMENT',
   'SUBMITTED_TO_FENIX',
   'SCHEDULED_DEFENSE',
-  'STATE_REVERTED'
+  'STATE_REVERTED',
+  'GRADE_SUBMITTED'
 ]
 
 // Format date for display
@@ -161,6 +162,8 @@ const getLogClass = (action: string) => {
       return 'log-scheduled'
     case 'STATE_REVERTED':
       return 'log-reverted'
+    case 'GRADE_SUBMITTED':
+      return 'log-grade'
     default:
       return ''
   }
@@ -249,6 +252,10 @@ const fetchLogs = async () => {
 
 .log-reverted {
   background-color: rgba(233, 30, 99, 0.1);
+}
+
+.log-grade {
+  background-color: rgba(63, 81, 181, 0.1);
 }
 
 .v-table {

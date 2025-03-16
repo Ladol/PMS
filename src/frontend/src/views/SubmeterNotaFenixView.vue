@@ -228,6 +228,20 @@ const submeterNota = async (id: number) => {
     
     await RemoteServices.gradeThesis(id, currentCoordinatorId, grade);
     
+    // Log the grade submission action
+    try {
+      const proposal = propostas.value.find(p => p.id === id);
+      if (proposal) {
+        await RemoteServices.logAction({
+          action: 'GRADE_SUBMITTED',
+          person: roleStore.currentPerson?.name || 'Unknown Coordinator',
+          details: `Submitted grade ${grade} for student: ${proposal.student.name}, Proposal ID: ${id}`
+        });
+      }
+    } catch (logError) {
+      console.error('Failed to log grade submission action:', logError);
+    }
+    
     // Remove the graded proposal from the list
     propostas.value = propostas.value.filter(p => p.id !== id);
     
