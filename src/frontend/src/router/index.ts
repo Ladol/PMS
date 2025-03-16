@@ -11,6 +11,7 @@ import AgendarDefesaView from '@/views/AgendarDefesaView.vue'
 import { useRoleStore } from '@/stores/role'
 import SubmeterNotaFenixView from '../views/SubmeterNotaFenixView.vue'
 import AlunosView from '@/views/AlunosView.vue'
+import LogsView from '@/views/LogsView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -76,6 +77,11 @@ const router = createRouter({
       path: '/students/:id',
       name: 'StudentDetail',
       component: () => import('@/views/StudentDetailView.vue')
+    },
+    {
+      path: '/logs',
+      name: 'logs',
+      component: LogsView
     }
   ]
 })

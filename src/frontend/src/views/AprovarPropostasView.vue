@@ -182,6 +182,23 @@ const aprovarProposta = async (id: number) => {
     // Pass the current SC user's ID to the backend
     await RemoteServices.approveProposal(id, currentUserId);
     
+    // Get the proposal details for the log
+    const proposal = propostas.value.find(p => p.id === id);
+    if (proposal) {
+      // Log the approval action
+      try {
+        const currentUser = userStore.user.name || (roleStore.currentPerson?.name || 'Unknown User');
+        await RemoteServices.logAction({
+          action: 'APPROVED_JURY',
+          person: currentUser,
+          details: `Approved jury proposal for student: ${proposal.student.name}, Jury members: ${proposal.juryMembers.map(m => m.name).join(', ')}`
+        });
+        console.log('Approval action logged successfully');
+      } catch (logError) {
+        console.error('Failed to log approval action:', logError);
+      }
+    }
+    
     // Remove the approved proposal from the list
     propostas.value = propostas.value.filter(p => p.id !== id);
     
@@ -211,6 +228,23 @@ const rejeitarProposta = async (id: number) => {
     rejecting.value = id;
     // Pass the current SC user's ID to the backend
     await RemoteServices.rejectProposal(id, currentUserId);
+    
+    // Get the proposal details for the log
+    const proposal = propostas.value.find(p => p.id === id);
+    if (proposal) {
+      // Log the rejection action
+      try {
+        const currentUser = userStore.user.name || (roleStore.currentPerson?.name || 'Unknown User');
+        await RemoteServices.logAction({
+          action: 'REJECTED_JURY',
+          person: currentUser,
+          details: `Rejected jury proposal for student: ${proposal.student.name}, Jury members: ${proposal.juryMembers.map(m => m.name).join(', ')}`
+        });
+        console.log('Rejection action logged successfully');
+      } catch (logError) {
+        console.error('Failed to log rejection action:', logError);
+      }
+    }
     
     // Remove the rejected proposal from the list
     propostas.value = propostas.value.filter(p => p.id !== id);

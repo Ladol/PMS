@@ -149,7 +149,52 @@ export default class RemoteServices {
       coordinatorId
     });
   }
+
+  static async getLogs(filters: {
+      action?: string;
+      person?: string;
+      date?: string;
+    } = {}) {
+      const params = new URLSearchParams();
+      
+      if (filters.action) {
+        params.append('action', filters.action);
+      }
+      
+      if (filters.person) {
+        params.append('person', filters.person);
+      }
+      
+      if (filters.date) {
+        params.append('date', filters.date);
+      }
+  
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+    
+    try {
+      const fullResponse = await axios.get(`${import.meta.env.VITE_ROOT_API}/api/logs${queryString}`);
+      return fullResponse.data;
+    } catch (error) {
+      console.error('Error in getLogs:', error);
+      throw Error('Error getting logs: ' + error);
+    }
+  }
+
+  static async logAction(logData: {
+    action: string;
+    person: string;
+    details: string;
+  }) {
+    return httpClient
+      .post('/api/logs', logData)
+      .then(response => response.data)
+      .catch(error => {
+        console.error('Error logging action:', error);
+        throw Error('Error logging action: ' + error);
+      });
+  }
 }
 
 httpClient.interceptors.request.use((request) => request, RemoteServices.handleError)
 httpClient.interceptors.response.use((response) => response.data, RemoteServices.handleError)
+

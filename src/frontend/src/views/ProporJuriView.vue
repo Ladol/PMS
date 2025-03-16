@@ -110,7 +110,21 @@ const submeterProposta = async () => {
       .map(p => p.id)
       .filter((id): id is number => id !== undefined)
     
+    // First submit the proposal
     await RemoteServices.submeterPropostaJuri(professorIds)
+    
+    // Then log the action
+    const juryNames = selectedProfessores.value.map(p => p.name).join(', ')
+    try {
+      await RemoteServices.logAction({
+        action: 'PROPOSED_JURY',
+        person: `${currentStudent.value.name} (${currentStudent.value.istId})`,
+        details: `Proposed jury: ${juryNames}`
+      })
+      console.log('Action logged successfully')
+    } catch (logError) {
+      console.error('Failed to log action:', logError)
+    }
     
     // Clear selected professors after successful submission
     selectedProfessores.value = []
