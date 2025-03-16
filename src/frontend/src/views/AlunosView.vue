@@ -349,7 +349,22 @@ const revertState = async () => {
       throw new Error('Nenhum coordenador selecionado')
     }
     
+    // Store the current and previous states before reverting
+    const currentState = selectedStudent.value.defenseState || selectedStudent.value.thesisState
+    const previousState = getPreviousState(selectedStudent.value)
+    
     await RemoteServices.revertState(selectedStudent.value.id, coordinatorId)
+    
+    // Log the state reversion action
+    try {
+      await RemoteServices.logAction({
+        action: 'STATE_REVERTED',
+        person: roleStore.currentPerson?.name || 'Unknown Coordinator',
+        details: `Reverted state for student: ${selectedStudent.value.name}, From: ${formatState(currentState)}, To: ${previousState}`
+      })
+    } catch (logError) {
+      console.error('Failed to log state reversion action:', logError)
+    }
     
     // Refresh the student list
     const response = await RemoteServices.getStudents()

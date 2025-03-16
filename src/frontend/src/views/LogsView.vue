@@ -126,7 +126,8 @@ const actionTypes = [
   'ASSIGNED_PRESIDENT',
   'SIGNED_DOCUMENT',
   'SUBMITTED_TO_FENIX',
-  'SCHEDULED_DEFENSE'
+  'SCHEDULED_DEFENSE',
+  'STATE_REVERTED'
 ]
 
 // Format date for display
@@ -158,6 +159,8 @@ const getLogClass = (action: string) => {
       return 'log-submitted'
     case 'SCHEDULED_DEFENSE':
       return 'log-scheduled'
+    case 'STATE_REVERTED':
+      return 'log-reverted'
     default:
       return ''
   }
@@ -187,14 +190,12 @@ const filteredLogs = computed(() => {
   return filtered
 })
 
-// Paginated logs
 const paginatedLogs = computed(() => {
   const start = (page.value - 1) * itemsPerPage
   const end = start + itemsPerPage
   return filteredLogs.value.slice(start, end)
 })
 
-// Make sure onMounted is calling fetchLogs
 onMounted(() => {
   fetchLogs()
 })
@@ -244,6 +245,10 @@ const fetchLogs = async () => {
 
 .log-scheduled {
   background-color: rgba(255, 193, 7, 0.1);
+}
+
+.log-reverted {
+  background-color: rgba(233, 30, 99, 0.1);
 }
 
 .v-table {
