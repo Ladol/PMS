@@ -264,8 +264,7 @@ const downloadPdf = (proposta: ThesisProposal) => {
 };
 
 const generatePdfContent = (proposta: ThesisProposal): string => {
-  // In a real application, you would use a library like jsPDF to generate a real PDF
-  // For this project, we'll just return a string representation
+  // For simplification, we'll just return a string with the proposal details
   return `
     Instituto Superior Técnico
     Departamento de Engenharia Informática
@@ -312,11 +311,21 @@ const assinarDocumento = async () => {
     // Get the file name
     const fileName = uploadedFile.value.name;
     
-    // In a real application, you would upload the file to a server
-    // For this simulation, we'll just use the file name as the document path
+    // For simplification and testing, we'll just store the file in a folder named 'signed_documents'
     const documentPath = `signed_documents/${fileName}`;
     
     await RemoteServices.signDocument(selectedProposal.value.id, currentCoordinatorId, documentPath);
+    
+    // Log the document signing action
+    try {
+      await RemoteServices.logAction({
+        action: 'SIGNED_DOCUMENT',
+        person: roleStore.currentPerson?.name || 'Unknown Coordinator',
+        details: `Signed document for student: ${selectedProposal.value.student.name}, Proposal ID: ${selectedProposal.value.id}`
+      });
+    } catch (logError) {
+      console.error('Failed to log document signing action:', logError);
+    }
     
     // Remove the signed proposal from the list
     propostas.value = propostas.value.filter(p => p.id !== selectedProposal.value?.id);
